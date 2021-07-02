@@ -2,7 +2,7 @@ package io.mysmarthome.service.impl;
 
 import io.mysmarthome.model.entity.DeviceEntity;
 import io.mysmarthome.platform.PlatformPlugin;
-import io.mysmarthome.platform.ReceivedMessage;
+import io.mysmarthome.platform.message.ReceivedMessage;
 import io.mysmarthome.service.DeviceManager;
 import io.mysmarthome.service.DeviceSender;
 import io.mysmarthome.service.MyPluginManager;

@@ -1,4 +1,4 @@
-package io.mysmarthome.notification;
+package io.mysmarthome.service;
 
 public class NotificationException extends RuntimeException {
 

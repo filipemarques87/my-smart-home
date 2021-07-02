@@ -1,6 +1,6 @@
 package io.mysmarthome.service;
 
-import io.mysmarthome.platform.ReceivedMessage;
+import io.mysmarthome.platform.message.ReceivedMessage;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;

@@ -1,10 +1,10 @@
-package io.mysmarthome.platform;
+package io.mysmarthome.platform.message;
 
+import io.mysmarthome.platform.PlatformPlugin;
 import lombok.Builder;
 import lombok.Value;
 
 import java.util.Date;
-
 
 @Value
 @Builder

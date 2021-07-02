@@ -1,6 +1,8 @@
-package io.mysmarthome.platform;
+package io.mysmarthome.platform.message;
 
 import io.mysmarthome.device.Device;
+import io.mysmarthome.platform.message.OnReceive;
+import io.mysmarthome.platform.message.ReceivedMessage;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
@@ -21,7 +23,6 @@ public class DeviceHandler {
     private OnReceive callback;
 
     private List<OnReceive> tempCallback;
-
 
     @Builder
     public DeviceHandler(Device device, OnReceive callback) {

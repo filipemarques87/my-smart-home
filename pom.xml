@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.mysmarthome</groupId>
-    <artifactId>server-app</artifactId>
+    <artifactId>application</artifactId>
     <version>1.0-SNAPSHOT</version>
     <name>server-app</name>
 

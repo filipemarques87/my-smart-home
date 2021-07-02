@@ -1,4 +1,4 @@
-package io.mysmarthome.platform;
+package io.mysmarthome.platform.message;
 
 import io.mysmarthome.device.Device;
 

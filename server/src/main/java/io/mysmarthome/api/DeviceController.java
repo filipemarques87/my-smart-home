@@ -2,7 +2,7 @@ package io.mysmarthome.api;
 
 import io.mysmarthome.configuration.ApplicationProperties;
 import io.mysmarthome.model.Serializer;
-import io.mysmarthome.platform.ReceivedMessage;
+import io.mysmarthome.platform.message.ReceivedMessage;
 import io.mysmarthome.service.DeviceSender;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
