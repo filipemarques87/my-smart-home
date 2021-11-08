@@ -1,10 +1,10 @@
 #!/bin/bash
 
-DIST_DIR=./dist
+DIST_DIR=dist
 
 mvn clean package
-$ret=$?
-if [ $ret ne 0 ]; then
+ret=$?
+if [[ $ret != 0 ]]; then
   exit 1
 fi
 

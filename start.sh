@@ -7,7 +7,7 @@ DB_PASSWORD=
 LOG_LEVEL=INFO
 
 # volumes host path
-CONFIG_PATH=/home/filipe/projects/my-smart-home/config
+CONFIG_PATH=/home/filipe/projects/my-smart-home
 PLUGINS_PATH=/home/filipe/projects/my-smart-home/server-app/plugins
 
 docker run \
@@ -19,4 +19,4 @@ docker run \
   --volume $CONFIG_PATH:/app/config \
   --volume PLUGINS_PATH:/app/plugins \
   --network my-smart-home-network \
-  server-app_mysmarthome #my-smart-home
+  my-smart-home-server #my-smart-home
