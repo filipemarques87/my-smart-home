@@ -4,8 +4,6 @@ ARG DB_HOST
 ARG DB_USER
 ARG DB_PASSWORD
 
-VOLUME /app/config
-VOLUME /app/plugins
 
 COPY ./dist /app
 
@@ -18,4 +16,4 @@ CMD ["java", \
      "-DlogLevel=${LOG_LEVEL}", \
      "-DlogPath=/app/logs", \
      "-DfirebaseConfigFile=/", \
-     "-jar", "server-1.0-SNAPSHOT.jar"]
+     "-jar", "my-smart-home-server.jar"]
