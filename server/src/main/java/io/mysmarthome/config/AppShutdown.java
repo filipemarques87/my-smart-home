@@ -1,5 +1,6 @@
 package io.mysmarthome.config;
 
+import io.mysmarthome.device.Device;
 import io.mysmarthome.platform.PlatformPlugin;
 import io.mysmarthome.service.MyPluginManager;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,7 @@ import javax.annotation.PreDestroy;
 public class AppShutdown {
 
     private final SpringPluginManager pluginManager;
-    private final MyPluginManager<PlatformPlugin> platformManager;
+    private final MyPluginManager<PlatformPlugin<? extends Device>> platformManager;
 
     @PreDestroy
     public void destroy() {

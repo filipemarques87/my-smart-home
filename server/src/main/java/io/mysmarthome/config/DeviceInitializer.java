@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.mysmarthome.config.exception.ConfigurationException;
+import io.mysmarthome.device.Device;
 import io.mysmarthome.model.config.DeviceConfig;
 import io.mysmarthome.model.entity.DeviceEntity;
 import io.mysmarthome.model.mapper.DeviceMapper;
@@ -33,7 +34,7 @@ public class DeviceInitializer {
 
     private final DeviceManager deviceManager;
     private final DeviceMapper deviceMapper;
-    private final MyPluginManager<PlatformPlugin> platformManager;
+    private final MyPluginManager<? extends PlatformPlugin<? extends Device>> platformManager;
     private final ReceiveMessage receiveMessage;
     private final TaskScheduler scheduler;
 
@@ -69,7 +70,7 @@ public class DeviceInitializer {
             log.warn("Platform {} does not exists. Device {} skipped", deviceEntity.getPlatform(), deviceEntity.getName());
             return;
         }
-        PlatformPlugin platform = platformManager.get(deviceEntity.getPlatform());
+        PlatformPlugin<? extends Device> platform = platformManager.get(deviceEntity.getPlatform());
         platform.registerDevice(deviceEntity, receiveMessage);
 
         if (deviceEntity.getSchedulers() != null) {

@@ -1,5 +1,6 @@
 package io.mysmarthome.platform.message;
 
+import io.mysmarthome.device.Device;
 import io.mysmarthome.platform.PlatformPlugin;
 import lombok.Builder;
 import lombok.Value;
@@ -10,7 +11,7 @@ import java.util.Date;
 @Builder
 public class ReceivedMessage {
 
-    PlatformPlugin platform;
+    PlatformPlugin<? extends Device> platform;
 
     Object message;
 

@@ -1,6 +1,8 @@
 package io.mysmarthome.service.impl;
 
 import io.mysmarthome.BasicPlugin;
+import io.mysmarthome.device.Device;
+import io.mysmarthome.platform.PlatformPlugin;
 import io.mysmarthome.service.MyPluginManager;
 import lombok.extern.slf4j.Slf4j;
 
@@ -10,7 +12,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class MyPluginManagerImpl<T extends BasicPlugin> implements MyPluginManager<T> {
+public class MyPluginManagerImpl<T extends PlatformPlugin<? extends Device>> implements MyPluginManager<T> {
 
     private final Map<String, T> plugins;
 

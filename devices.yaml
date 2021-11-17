@@ -1,0 +1,46 @@
+- platform: "mqtt"
+  listenTopic: "/home/room/temperature1"
+  actionTopic: "/home/room/temperature"
+  type: "simple-sensor"
+  units: "C"
+  name: "Temperatura Sala"
+  schedulers:
+  - trigger: "0 0 * * * ?"
+    payload:
+  notifications:
+  - message: "\"Temperatura demasiada elevada: \" + $v"
+    condition: "$v > 30"
+  - message: "\"Temperatura demasiada baixa: \" + $v"
+    condition: "$v < 5"
+  actions:
+  - trigger: "$v > 30"
+    deviceId: "sala-ac"
+    payload: "on"
+  group: "Sala"
+
+    
+
+- platform: "mqtt"
+  ref: "aquecedor"
+  actionTopic: "/home/room/light"
+  listenTopic: "/home/room/light1"
+  type: "simple-switch"
+  name: "Luz Sala"
+  group: "Sala"
+  scheduler:
+  - at: "0 6 * * * ?"
+    payload: "off"
+  - at: "0 21 * * * ?"
+    payload: "on"
+
+
+
+- platform: "mqtt"
+  deviceId: "sala-ac"
+  actionTopic: "/home/living-room/ac"
+  type: "simple-sensor"
+  name: "AC da sala"
+  group: "Sala 3"
+
+
+

@@ -4,7 +4,8 @@ import org.apache.commons.lang3.StringUtils;
 
 public enum SystemProperty {
     DEVICE_FILE("deviceFile"),
-    CONFIGURATION_FILE("configurationFile");
+    CONFIGURATION_FILE("configurationFile"),
+    PLATFORM_FOLDER("platformsFolder");
 
     private final String property;
 

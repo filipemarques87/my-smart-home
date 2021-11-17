@@ -29,7 +29,7 @@ public class ReceiveMessage implements OnReceive {
     private final DeviceManager deviceManager;
     private final ScriptEngine scriptEngine;
     private final NotificationService notifierService;
-    private final MyPluginManager<PlatformPlugin> platformManager;
+    private final MyPluginManager<PlatformPlugin<? extends Device>> platformManager;
 
     @Override
     public void onReceive(Device device, ReceivedMessage msg) {
@@ -42,6 +42,7 @@ public class ReceiveMessage implements OnReceive {
         triggerAction((DeviceEntity) device, scriptExecutor);
     }
 
+    // FIXME: nao deveria aceitar um deviceEntity
     private void notify(DeviceEntity device, Function<String, Object> scriptExecutor) {
         device.getNotifications().stream()
                 .filter(n -> needToNotify(scriptExecutor, n))

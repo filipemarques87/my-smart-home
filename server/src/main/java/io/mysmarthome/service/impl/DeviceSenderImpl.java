@@ -1,5 +1,6 @@
 package io.mysmarthome.service.impl;
 
+import io.mysmarthome.device.Device;
 import io.mysmarthome.model.entity.DeviceEntity;
 import io.mysmarthome.platform.PlatformPlugin;
 import io.mysmarthome.platform.message.ReceivedMessage;
@@ -17,7 +18,7 @@ import java.util.concurrent.CompletableFuture;
 public class DeviceSenderImpl implements DeviceSender {
 
     private final DeviceManager deviceManager;
-    private final MyPluginManager<PlatformPlugin> platformManager;
+    private final MyPluginManager<PlatformPlugin<? extends Device>> platformManager;
 
     @Override
     public CompletableFuture<Optional<ReceivedMessage>> send(String deviceId, Object payload) {

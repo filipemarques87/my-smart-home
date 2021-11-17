@@ -57,12 +57,21 @@ public class DeviceManagerImpl implements DeviceManager {
         deviceDataRepository.save(DeviceDataEntity.builder()
                 .deviceId(deviceId)
                 .eventTime(receivedAt)
-                .data(serializer.serialize(message))
+                .serializedData(serializer.serialize(message))
+                .type(message.getClass().getCanonicalName())
                 .build());
     }
 
     public DeviceDataEntity findDeviceData(String deviceId) {
         return deviceDataRepository.findById(deviceId)
+                .map(d -> {
+                    try {
+                        d.setData(serializer.deserialize(d.getSerializedData(), Class.forName(d.getType())));
+                    } catch (Exception ex) {
+                        throw new RuntimeException(ex);
+                    }
+                    return d;
+                })
                 .orElse(null);
     }
 

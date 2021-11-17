@@ -22,14 +22,14 @@ public class DeviceController {
     private final ApplicationProperties applicationProperties;
     private final Serializer serializer;
 
-    @PostMapping("/{deviceId}")
-    public Object getGroups(@PathVariable("deviceId") String deviceId, @RequestBody Object msg) throws InterruptedException, ExecutionException, TimeoutException {
+    @PostMapping(value="/{deviceId}",consumes = org.springframework.http.MediaType.TEXT_PLAIN_VALUE, produces=org.springframework.http.MediaType.TEXT_PLAIN_VALUE)
+    public Object getGroups(@PathVariable("deviceId") String deviceId, @RequestBody String msg) throws InterruptedException, ExecutionException, TimeoutException {
         log.info("Receive action request for device {}: {}", deviceId, msg);
         return deviceSender
                 .send(deviceId, msg)
                 .get(applicationProperties.getInt("api.timeout"), TimeUnit.SECONDS)
                 .map(ReceivedMessage::getMessage)
-                .map(serializer::serialize)
+//                .map(m -> serializer.deserialize(m.get))
                 .orElseThrow(() -> new IllegalArgumentException("Not able to get response from " + deviceId));
     }
 }

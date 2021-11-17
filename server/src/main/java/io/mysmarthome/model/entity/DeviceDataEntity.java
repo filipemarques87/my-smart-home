@@ -1,7 +1,6 @@
 package io.mysmarthome.model.entity;
 
 import io.mysmarthome.model.entity.converter.DateConverter;
-import io.mysmarthome.model.entity.converter.LobSerializerConverter;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,5 +27,10 @@ public class DeviceDataEntity {
 
     @Lob
     @Column(name = "data")
-    private String data;
+    private String serializedData;
+
+    private transient Object data;
+
+    @Column(name = "type")
+    private String type;
 }

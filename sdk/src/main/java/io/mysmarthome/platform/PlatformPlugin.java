@@ -8,9 +8,18 @@ import io.mysmarthome.platform.message.ReceivedMessage;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-public interface PlatformPlugin extends BasicPlugin {
+public interface PlatformPlugin<T extends Device> extends BasicPlugin {
     default void registerDevice(Device device, OnReceive callback) {
+        onRegisterDevice(getPlatformSpecificDevice(device), callback);
     }
 
-    CompletableFuture<Optional<ReceivedMessage>> send(Device device, Object payload);
+    void onRegisterDevice(T device, OnReceive callback);
+
+    T getPlatformSpecificDevice(Device device);
+
+    default CompletableFuture<Optional<ReceivedMessage>> send(Device device, Object payload) {
+        return onSend(getPlatformSpecificDevice(device), payload);
+    }
+
+    CompletableFuture<Optional<ReceivedMessage>> onSend(T device, Object payload);
 }

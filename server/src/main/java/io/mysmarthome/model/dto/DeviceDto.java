@@ -10,6 +10,6 @@ public class DeviceDto {
     String name;
     String type;
     String units;
-    String data;
+    Object data;
     String lastUpdate;
 }
