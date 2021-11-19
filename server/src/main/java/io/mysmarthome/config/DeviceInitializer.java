@@ -12,6 +12,7 @@ import io.mysmarthome.platform.PlatformPlugin;
 import io.mysmarthome.service.DeviceManager;
 import io.mysmarthome.service.MyPluginManager;
 import io.mysmarthome.service.ReceiveMessage;
+import io.mysmarthome.service.SchedulerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.DependsOn;
@@ -37,6 +38,7 @@ public class DeviceInitializer {
     private final MyPluginManager<? extends PlatformPlugin<? extends Device>> platformManager;
     private final ReceiveMessage receiveMessage;
     private final TaskScheduler scheduler;
+    private final SchedulerService schedulerService;
 
     @PostConstruct
     public void initialize() {
@@ -78,9 +80,13 @@ public class DeviceInitializer {
                     .forEach(s -> {
                         log.info("Configuring scheduler for device '{}'", deviceEntity.getDeviceId());
                         scheduler.schedule(() -> {
-                            log.info("Sending '{}' to device '{}'", s.getPayload(), deviceEntity.getDeviceId());
-                            platform.send(deviceEntity, s.getPayload());
-                            log.info("Data sent to device '{}'", deviceEntity.getDeviceId());
+                            schedulerService.schedulerTriggered(deviceEntity.getDeviceId(), s.getId());
+//                            deviceManager.getDevice(deviceEntity.getDeviceId())
+//                                    .ifPresent(d -> {
+//                                        //log.info("Sending '{}' to device '{}'", .getPayload(), d.getDeviceId());
+//                                        platform.send(deviceEntity, s.getPayload());
+//                                        log.info("Data sent to device '{}'", deviceEntity.getDeviceId());
+//                                    });
                         }, buildCronTrigger(s.getTrigger()));
                     });
         }

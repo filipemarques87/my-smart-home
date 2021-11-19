@@ -25,7 +25,12 @@ public class SchedulerEntity {
     private String trigger;
 
     @Column(name = "payload")
-    private String payload;
+    private String serializedPayload;
+
+    @Column(name = "type")
+    private String type;
+
+    private transient Object payload;
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude

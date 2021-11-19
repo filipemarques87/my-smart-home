@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -22,8 +23,8 @@ public class DeviceController {
     private final ApplicationProperties applicationProperties;
     private final Serializer serializer;
 
-    @PostMapping(value="/{deviceId}",consumes = org.springframework.http.MediaType.TEXT_PLAIN_VALUE, produces=org.springframework.http.MediaType.TEXT_PLAIN_VALUE)
-    public Object getGroups(@PathVariable("deviceId") String deviceId, @RequestBody String msg) throws InterruptedException, ExecutionException, TimeoutException {
+    @PostMapping(value = "/{deviceId}")
+    public Object getGroups(@PathVariable("deviceId") String deviceId, @RequestBody Map<String, Object> msg) throws InterruptedException, ExecutionException, TimeoutException {
         log.info("Receive action request for device {}: {}", deviceId, msg);
         return deviceSender
                 .send(deviceId, msg)

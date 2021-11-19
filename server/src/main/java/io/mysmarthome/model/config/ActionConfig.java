@@ -18,5 +18,5 @@ public class ActionConfig {
     private String deviceId;
 
     @JsonProperty("payload")
-    private String payload;
+    private Object payload;
 }

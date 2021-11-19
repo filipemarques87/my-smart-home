@@ -34,11 +34,45 @@ public class DeviceManagerImpl implements DeviceManager {
                 .ifPresentOrElse(
                         d -> log.info("Update device. Old state: {}, new state {}", d, device),
                         () -> log.info("Add new device {}", device));
+
+        device.getActions().forEach(a -> {
+            Object p = Objects.requireNonNullElse(a.getPayload(), "");
+            a.setSerializedPayload(serializer.serialize(p));
+            a.setType(p.getClass().getCanonicalName());
+        });
+
+        device.getSchedulers().forEach(s -> {
+            Object p = Objects.requireNonNullElse(s.getPayload(), "");
+            s.setSerializedPayload(serializer.serialize(p));
+            s.setType(p.getClass().getCanonicalName());
+        });
+
         return deviceEntityRepository.save(device);
     }
 
     public Optional<DeviceEntity> getDevice(String deviceId) {
-        return deviceEntityRepository.findById(deviceId);
+        Optional<DeviceEntity> optDeviceEntity = deviceEntityRepository.findById(deviceId);
+        if (optDeviceEntity.isPresent()) {
+            DeviceEntity deviceEntity = optDeviceEntity.get();
+            deviceEntity.getActions().forEach(a -> {
+                try {
+                    a.setPayload(serializer.deserialize(a.getSerializedPayload(), Class.forName(a.getType())));
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }
+            });
+
+            deviceEntity.getSchedulers().forEach(s -> {
+                try {
+                    s.setPayload(serializer.deserialize(s.getSerializedPayload(), Class.forName(s.getType())));
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }
+            });
+
+            return Optional.of(deviceEntity);
+        }
+        return Optional.empty();
     }
 
     public List<DeviceGroupEntity> getGroups() {
@@ -50,7 +84,25 @@ public class DeviceManagerImpl implements DeviceManager {
 
     public List<DeviceEntity> getDevicesForGroup(String groupId) {
         Objects.requireNonNull(groupId, "Group must be not null");
-        return deviceEntityRepository.findByGroup_groupId(groupId);
+        return deviceEntityRepository.findByGroup_groupId(groupId).stream()
+                .peek(d -> {
+                    d.getActions().forEach(a -> {
+                        try {
+                            a.setPayload(serializer.deserialize(a.getSerializedPayload(), Class.forName(a.getType())));
+                        } catch (Exception ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    });
+
+                    d.getSchedulers().forEach(s -> {
+                        try {
+                            s.setPayload(serializer.deserialize(s.getSerializedPayload(), Class.forName(s.getType())));
+                        } catch (Exception ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    });
+                })
+                .collect(Collectors.toList());
     }
 
     public void saveData(String deviceId, Date receivedAt, Object message) {

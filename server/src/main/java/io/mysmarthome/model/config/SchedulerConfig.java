@@ -15,5 +15,5 @@ public class SchedulerConfig {
     private String trigger;
 
     @JsonProperty("payload")
-    private String payload;
+    private Object payload;
 }
