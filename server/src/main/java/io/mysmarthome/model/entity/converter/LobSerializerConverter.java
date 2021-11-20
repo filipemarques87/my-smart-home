@@ -8,6 +8,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+// FIXME: remove
 public class LobSerializerConverter implements AttributeConverter<Object, byte[]> {
 
     @SneakyThrows

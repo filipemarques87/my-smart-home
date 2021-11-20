@@ -10,6 +10,7 @@ import java.util.Objects;
 @Slf4j
 @Converter
 public class DateConverter implements AttributeConverter<Date, Long> {
+
     @Override
     public Long convertToDatabaseColumn(Date date) {
         if (Objects.nonNull(date)) {

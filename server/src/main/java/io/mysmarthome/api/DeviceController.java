@@ -30,7 +30,6 @@ public class DeviceController {
                 .send(deviceId, msg)
                 .get(applicationProperties.getInt("api.timeout"), TimeUnit.SECONDS)
                 .map(ReceivedMessage::getMessage)
-//                .map(m -> serializer.deserialize(m.get))
                 .orElseThrow(() -> new IllegalArgumentException("Not able to get response from " + deviceId));
     }
 }

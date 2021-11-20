@@ -3,6 +3,7 @@ package io.mysmarthome.config;
 import org.apache.commons.lang3.StringUtils;
 
 public enum SystemProperty {
+
     DEVICE_FILE("deviceFile"),
     CONFIGURATION_FILE("configurationFile"),
     PLATFORM_FOLDER("platformsFolder");

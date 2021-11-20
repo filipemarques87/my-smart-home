@@ -6,5 +6,6 @@ import lombok.Value;
 
 @Data
 public class TokenDto {
+
     String token;
 }

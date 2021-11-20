@@ -22,10 +22,12 @@ import java.util.stream.Collectors;
 @Configuration
 public class PluginConfig {
 
+    static {
+        System.setProperty("pf4j.mode", RuntimeMode.DEPLOYMENT.toString());
+    }
+
     @Bean
     public SpringPluginManager pluginManager() {
-        System.setProperty("pf4j.mode", RuntimeMode.DEPLOYMENT.toString());
-//        System.setProperty("pf4j.pluginsDir", SystemProperty.PLATFORM_FOLDER.getValue());
         return new SpringPluginManager(Paths.get(SystemProperty.PLATFORM_FOLDER.getValue()));
     }
 

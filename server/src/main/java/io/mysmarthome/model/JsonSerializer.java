@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
 
+// FIXME remove
 @Component
 public class JsonSerializer implements Serializer {
 

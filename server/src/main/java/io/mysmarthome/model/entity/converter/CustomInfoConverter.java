@@ -12,6 +12,7 @@ import java.util.Map;
 @Slf4j
 @Converter
 public class CustomInfoConverter implements AttributeConverter<Map<String, Object>, String> {
+
     @Override
     public String convertToDatabaseColumn(Map<String, Object> stringObjectMap) {
         ObjectMapper mapper = new ObjectMapper();

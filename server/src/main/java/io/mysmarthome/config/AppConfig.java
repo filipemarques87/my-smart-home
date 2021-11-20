@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class AppConfig {
+
     @Bean
     public ApplicationProperties applicationProperties() {
         String filename = SystemProperty.CONFIGURATION_FILE.getValue();

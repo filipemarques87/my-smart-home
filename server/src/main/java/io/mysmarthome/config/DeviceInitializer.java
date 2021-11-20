@@ -34,10 +34,15 @@ import java.util.TimeZone;
 public class DeviceInitializer {
 
     private final DeviceManager deviceManager;
+
     private final DeviceMapper deviceMapper;
+
     private final MyPluginManager<? extends PlatformPlugin<? extends Device>> platformManager;
+
     private final ReceiveMessage receiveMessage;
+
     private final TaskScheduler scheduler;
+
     private final SchedulerService schedulerService;
 
     @PostConstruct
@@ -81,12 +86,6 @@ public class DeviceInitializer {
                         log.info("Configuring scheduler for device '{}'", deviceEntity.getDeviceId());
                         scheduler.schedule(() -> {
                             schedulerService.schedulerTriggered(deviceEntity.getDeviceId(), s.getId());
-//                            deviceManager.getDevice(deviceEntity.getDeviceId())
-//                                    .ifPresent(d -> {
-//                                        //log.info("Sending '{}' to device '{}'", .getPayload(), d.getDeviceId());
-//                                        platform.send(deviceEntity, s.getPayload());
-//                                        log.info("Data sent to device '{}'", deviceEntity.getDeviceId());
-//                                    });
                         }, buildCronTrigger(s.getTrigger()));
                     });
         }

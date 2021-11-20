@@ -11,6 +11,7 @@ import javax.sql.DataSource;
 @Slf4j
 @Configuration
 public class DBConfig {
+
     @Bean
     public DataSource dataSource(
             @Value("${dbHost}") String dbHost,
