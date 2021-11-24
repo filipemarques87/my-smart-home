@@ -10,6 +10,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 @Slf4j
@@ -38,7 +39,7 @@ public class DeviceHandler {
     public void broadcastMessage(ReceivedMessage message) {
         try {
             if (callback != null) {
-                callback.onReceive(device, message);
+                CompletableFuture.runAsync(() -> callback.onReceive(device, message));
             }
             tempCallback.forEach(c -> c.onReceive(device, message));
         } catch (Throwable t) {

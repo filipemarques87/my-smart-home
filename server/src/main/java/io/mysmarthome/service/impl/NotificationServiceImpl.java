@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Slf4j
 @RequiredArgsConstructor
 @Service
@@ -40,6 +42,12 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public Recipient insertFirebaseToken(String token) {
+        Optional<Recipient> optRecipient = recipientRepository.findByAddress(token).stream().findFirst();
+        if (optRecipient.isPresent()) {
+            log.info("Token {} already registered", token);
+            return optRecipient.get();
+        }
+
         Recipient recipient = new Recipient();
         recipient.setAddress(token);
         return recipientRepository.save(recipient);

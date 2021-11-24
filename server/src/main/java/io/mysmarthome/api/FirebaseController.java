@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
-@CrossOrigin(origins = "http://localhost:8080")
+//@CrossOrigin(origins = "http://localhost:8080")
 @Slf4j
 @RequiredArgsConstructor
 @RestController
@@ -21,7 +21,7 @@ public class FirebaseController {
     private final NotificationService notificationService;
     private final TokenMapper tokenMapper;
 
-    @PostMapping
+    @PostMapping("")
     public ResponseEntity<TokenDto> addToken(@RequestBody TokenDto token) {
         log.info("Register new firebase token: {}", token);
         return Optional.ofNullable(notificationService.insertFirebaseToken(token.getToken()))

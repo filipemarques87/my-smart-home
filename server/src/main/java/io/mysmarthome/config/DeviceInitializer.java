@@ -34,15 +34,10 @@ import java.util.TimeZone;
 public class DeviceInitializer {
 
     private final DeviceManager deviceManager;
-
     private final DeviceMapper deviceMapper;
-
     private final MyPluginManager<? extends PlatformPlugin<? extends Device>> platformManager;
-
     private final ReceiveMessage receiveMessage;
-
     private final TaskScheduler scheduler;
-
     private final SchedulerService schedulerService;
 
     @PostConstruct

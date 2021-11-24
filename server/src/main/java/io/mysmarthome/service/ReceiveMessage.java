@@ -4,8 +4,8 @@ import io.mysmarthome.device.Device;
 import io.mysmarthome.model.entity.ActionEntity;
 import io.mysmarthome.model.entity.DeviceEntity;
 import io.mysmarthome.model.entity.NotificationEntity;
-import io.mysmarthome.platform.message.OnReceive;
 import io.mysmarthome.platform.PlatformPlugin;
+import io.mysmarthome.platform.message.OnReceive;
 import io.mysmarthome.platform.message.ReceivedMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,11 +38,13 @@ public class ReceiveMessage implements OnReceive {
         deviceManager.saveData(device.getDeviceId(), msg.getReceivedAt(), msg.getMessage());
 
         Function<String, Object> scriptExecutor = setupScriptEngine(msg.getMessage());
-        notify((DeviceEntity) device, scriptExecutor);
-        triggerAction((DeviceEntity) device, scriptExecutor);
+        deviceManager.getDevice(device.getDeviceId())
+                .ifPresent(d -> {
+                    notify(d, scriptExecutor);
+                    triggerAction(d, scriptExecutor);
+                });
     }
 
-    // FIXME: nao deveria aceitar um deviceEntity
     private void notify(DeviceEntity device, Function<String, Object> scriptExecutor) {
         device.getNotifications().stream()
                 .filter(n -> needToNotify(scriptExecutor, n))

@@ -26,7 +26,6 @@ public class FCMInitializer {
 
     @PostConstruct
     public void initialize() {
-        if(true)return;
         if (Objects.isNull(firebaseConfigPath)) {
             log.info("FCM not initialized - missing key file");
             return;

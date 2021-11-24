@@ -16,7 +16,6 @@ import javax.annotation.PreDestroy;
 public class AppShutdown {
 
     private final SpringPluginManager pluginManager;
-
     private final MyPluginManager<PlatformPlugin<? extends Device>> platformManager;
 
     @PreDestroy

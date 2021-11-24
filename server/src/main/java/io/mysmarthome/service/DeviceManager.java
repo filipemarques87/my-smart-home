@@ -21,7 +21,7 @@ public interface DeviceManager {
 
     void saveData(String id, Date receivedAt, Object message);
 
-    DeviceDataEntity findDeviceData(String deviceId);
+    DeviceDataEntity getDeviceData(String deviceId);
 
     void cleanDeviceDatabase();
 }

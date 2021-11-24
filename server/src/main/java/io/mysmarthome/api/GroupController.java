@@ -37,7 +37,7 @@ public class GroupController {
     public List<DeviceDto> getDevicesByGroup(@PathVariable("groupId") String groupId) {
         log.info("Get devices for groupId: {}", groupId);
         return deviceManager.getDevicesForGroup(groupId).stream()
-                .map(d -> deviceMapper.toDto(d, deviceManager.findDeviceData(d.getDeviceId())))
+                .map(d -> deviceMapper.toDto(d, deviceManager.getDeviceData(d.getDeviceId())))
                 .collect(Collectors.toList());
     }
 }

@@ -114,7 +114,7 @@ public class DeviceManagerImpl implements DeviceManager {
                 .build());
     }
 
-    public DeviceDataEntity findDeviceData(String deviceId) {
+    public DeviceDataEntity getDeviceData(String deviceId) {
         return deviceDataRepository.findById(deviceId)
                 .map(d -> {
                     try {
