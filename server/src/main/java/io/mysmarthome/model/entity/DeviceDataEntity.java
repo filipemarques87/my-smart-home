@@ -1,19 +1,19 @@
 package io.mysmarthome.model.entity;
 
-import io.mysmarthome.model.entity.converter.DateConverter;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.util.Date;
+import java.time.Instant;
 
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 @Entity
+@IdClass(DeviceDataId.class)
 @Table(name = "device_data")
 public class DeviceDataEntity {
 
@@ -21,9 +21,10 @@ public class DeviceDataEntity {
     @Column(name = "device_id", updatable = false, nullable = false)
     private String deviceId;
 
-    @Convert(converter = DateConverter.class)
+    @Id
+//    @Convert(converter = DateConverter.class)
     @Column(name = "event_time")
-    private Date eventTime;
+    private Instant eventTime;
 
     @Lob
     @Column(name = "data")

@@ -9,9 +9,16 @@ import io.mysmarthome.repository.DeviceEntityRepository;
 import io.mysmarthome.service.DeviceManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.time.Instant;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -105,7 +112,7 @@ public class DeviceManagerImpl implements DeviceManager {
                 .collect(Collectors.toList());
     }
 
-    public void saveData(String deviceId, Date receivedAt, Object message) {
+    public void saveData(String deviceId, Instant receivedAt, Object message) {
         deviceDataRepository.save(DeviceDataEntity.builder()
                 .deviceId(deviceId)
                 .eventTime(receivedAt)
@@ -114,8 +121,9 @@ public class DeviceManagerImpl implements DeviceManager {
                 .build());
     }
 
-    public DeviceDataEntity getDeviceData(String deviceId) {
-        return deviceDataRepository.findById(deviceId)
+    public List<DeviceDataEntity> getDeviceData(String deviceId, int limit) {
+        Pageable sortedByPriceDesc = PageRequest.of(0, limit, Sort.by("eventTime").descending());
+        return deviceDataRepository.findAllByDeviceId(deviceId, sortedByPriceDesc).stream()
                 .map(d -> {
                     try {
                         d.setData(serializer.deserialize(d.getSerializedData(), Class.forName(d.getType())));
@@ -124,7 +132,7 @@ public class DeviceManagerImpl implements DeviceManager {
                     }
                     return d;
                 })
-                .orElse(null);
+                .collect(Collectors.toList());
     }
 
     @Override

@@ -5,7 +5,7 @@ import io.mysmarthome.platform.PlatformPlugin;
 import lombok.Builder;
 import lombok.Value;
 
-import java.util.Date;
+import java.time.Instant;
 
 @Value
 @Builder
@@ -15,5 +15,5 @@ public class ReceivedMessage {
 
     Object message;
 
-    Date receivedAt = new Date();
+    Instant receivedAt = Instant.now();
 }

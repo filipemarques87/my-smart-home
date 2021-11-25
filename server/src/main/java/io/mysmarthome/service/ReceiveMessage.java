@@ -2,6 +2,7 @@ package io.mysmarthome.service;
 
 import io.mysmarthome.device.Device;
 import io.mysmarthome.model.entity.ActionEntity;
+import io.mysmarthome.model.entity.DeviceDataEntity;
 import io.mysmarthome.model.entity.DeviceEntity;
 import io.mysmarthome.model.entity.NotificationEntity;
 import io.mysmarthome.platform.PlatformPlugin;
@@ -15,9 +16,11 @@ import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.SimpleScriptContext;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static io.mysmarthome.util.SneakyException.sneakyException;
 
@@ -35,14 +38,22 @@ public class ReceiveMessage implements OnReceive {
     public void onReceive(Device device, ReceivedMessage msg) {
         log.info("Receive data for {}: {}", device.getDeviceId(), msg.getMessage().toString());
 
-        deviceManager.saveData(device.getDeviceId(), msg.getReceivedAt(), msg.getMessage());
+        try {
+            deviceManager.saveData(device.getDeviceId(), msg.getReceivedAt(), msg.getMessage());
 
-        Function<String, Object> scriptExecutor = setupScriptEngine(msg.getMessage());
-        deviceManager.getDevice(device.getDeviceId())
-                .ifPresent(d -> {
-                    notify(d, scriptExecutor);
-                    triggerAction(d, scriptExecutor);
-                });
+            List<Object> dataHistory = deviceManager.getDeviceData(device.getDeviceId(), 10).stream()
+                    .map(DeviceDataEntity::getData)
+                    .collect(Collectors.toList());
+
+            Function<String, Object> scriptExecutor = setupScriptEngine(dataHistory);
+            deviceManager.getDevice(device.getDeviceId())
+                    .ifPresent(d -> {
+                        notify(d, scriptExecutor);
+                        triggerAction(d, scriptExecutor);
+                    });
+        } catch (Exception ex) {
+            log.error("Error on receiving data from {}", device.getDeviceId(), ex);
+        }
     }
 
     private void notify(DeviceEntity device, Function<String, Object> scriptExecutor) {
@@ -78,11 +89,11 @@ public class ReceiveMessage implements OnReceive {
         return Boolean.TRUE.equals(output);
     }
 
-    private Function<String, Object> setupScriptEngine(Object val) {
+    private Function<String, Object> setupScriptEngine(List<Object> dataHistory) {
         ScriptContext scriptContext = new SimpleScriptContext();
         scriptContext.setBindings(scriptEngine.createBindings(), ScriptContext.ENGINE_SCOPE);
         Bindings engineScope = scriptContext.getBindings(ScriptContext.ENGINE_SCOPE);
-        engineScope.put("$v", val);
+        engineScope.put("$v", dataHistory);
         return sneakyException(trigger -> scriptEngine.eval(trigger, scriptContext));
     }
 

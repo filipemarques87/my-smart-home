@@ -57,7 +57,6 @@ public class DeviceInitializer {
             String filename = SystemProperty.DEVICE_FILE.getValue();
             log.info("Read device config file: {}", filename);
             ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-
             return mapper.readValue(new File(filename), new TypeReference<>() {
             });
         } catch (IOException e) {
