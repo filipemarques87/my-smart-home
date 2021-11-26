@@ -5,7 +5,6 @@ import io.mysmarthome.model.entity.ActionEntity;
 import io.mysmarthome.model.entity.DeviceDataEntity;
 import io.mysmarthome.model.entity.DeviceEntity;
 import io.mysmarthome.model.entity.NotificationEntity;
-import io.mysmarthome.platform.PlatformPlugin;
 import io.mysmarthome.platform.message.OnReceive;
 import io.mysmarthome.platform.message.ReceivedMessage;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +17,6 @@ import javax.script.ScriptEngine;
 import javax.script.SimpleScriptContext;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -29,10 +27,10 @@ import static io.mysmarthome.util.SneakyException.sneakyException;
 @Component
 public class ReceiveMessage implements OnReceive {
 
+    private final DeviceSender deviceSender;
     private final DeviceManager deviceManager;
     private final ScriptEngine scriptEngine;
     private final NotificationService notifierService;
-    private final MyPluginManager<PlatformPlugin<? extends Device>> platformManager;
 
     @Override
     public void onReceive(Device device, ReceivedMessage msg) {
@@ -70,15 +68,10 @@ public class ReceiveMessage implements OnReceive {
 
     private void performAction(ActionEntity action) {
         log.info("Action triggered for '{}'. Sending action to '{}'", action.getDeviceEntity().getDeviceId(), action.getTargetId());
-        Optional<DeviceEntity> deviceOpt = deviceManager.getDevice(action.getTargetId());
-        if (deviceOpt.isEmpty()) {
-            log.warn("Device id '{}' not found", action.getTargetId());
-            return;
-        }
-
-        DeviceEntity device = deviceOpt.get();
-        platformManager.get(device.getPlatform())
-                .send(device, action.getPayload());
+        deviceManager.getDevice(action.getTargetId())
+                .ifPresentOrElse(
+                        d -> deviceSender.send(d.getDeviceId(), action.getPayload()),
+                        () -> log.warn("Device id '{}' not found", action.getTargetId()));
     }
 
     private boolean needToPerformAction(Function<String, Object> scriptExecutor, ActionEntity action) {
