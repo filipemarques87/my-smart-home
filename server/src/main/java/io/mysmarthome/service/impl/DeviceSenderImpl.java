@@ -8,11 +8,13 @@ import io.mysmarthome.service.DeviceManager;
 import io.mysmarthome.service.DeviceSender;
 import io.mysmarthome.service.MyPluginManager;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class DeviceSenderImpl implements DeviceSender {
@@ -22,10 +24,17 @@ public class DeviceSenderImpl implements DeviceSender {
 
     @Override
     public CompletableFuture<Optional<ReceivedMessage>> send(String deviceId, Object payload) {
-        DeviceEntity device = deviceManager.getDevice(deviceId)
-                .orElseThrow(() -> new IllegalArgumentException("Device id not " + deviceId + "found"));
+        log.info("Sending '{}' to device '{}'", payload, deviceId);
 
-        return platformManager.get(device.getPlatform())
-                .send(device, payload);
+        try {
+            DeviceEntity device = deviceManager.getDevice(deviceId)
+                    .orElseThrow(() -> new IllegalArgumentException("Device id not " + deviceId + "found"));
+
+            return platformManager.get(device.getPlatform())
+                    .send(device, payload);
+        } catch (Exception ex) {
+            log.error("Error on sending data to '{}'", deviceId, ex);
+            throw ex;
+        }
     }
 }

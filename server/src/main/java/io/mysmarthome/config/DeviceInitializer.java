@@ -78,9 +78,9 @@ public class DeviceInitializer {
             deviceEntity.getSchedulers()
                     .forEach(s -> {
                         log.info("Configuring scheduler for device '{}'", deviceEntity.getDeviceId());
-                        scheduler.schedule(() -> {
-                            schedulerService.schedulerTriggered(deviceEntity.getDeviceId(), s.getId());
-                        }, buildCronTrigger(s.getTrigger()));
+                        scheduler.schedule(
+                                () -> schedulerService.schedulerTriggered(deviceEntity.getDeviceId(), s.getId()),
+                                buildCronTrigger(s.getTrigger()));
                     });
         }
     }

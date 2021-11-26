@@ -1,7 +1,6 @@
 package io.mysmarthome.api;
 
 import io.mysmarthome.configuration.ApplicationProperties;
-import io.mysmarthome.model.Serializer;
 import io.mysmarthome.platform.message.ReceivedMessage;
 import io.mysmarthome.service.DeviceSender;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +20,6 @@ public class DeviceController {
 
     private final DeviceSender deviceSender;
     private final ApplicationProperties applicationProperties;
-    private final Serializer serializer;
 
     @PostMapping(value = "/{deviceId}")
     public Object getGroups(@PathVariable("deviceId") String deviceId, @RequestBody Map<String, Object> msg) throws InterruptedException, ExecutionException, TimeoutException {
