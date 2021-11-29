@@ -11,16 +11,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import javax.script.Bindings;
-import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
-import javax.script.SimpleScriptContext;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static io.mysmarthome.util.SneakyException.sneakyException;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -43,7 +37,7 @@ public class ReceiveMessage implements OnReceive {
                     .map(DeviceDataEntity::getData)
                     .collect(Collectors.toList());
 
-            Function<String, Object> scriptExecutor = setupScriptEngine(dataHistory);
+            ScriptExecutor scriptExecutor = new ScriptExecutor(dataHistory, scriptEngine);
             deviceManager.getDevice(device.getDeviceId())
                     .ifPresent(d -> {
                         notify(d, scriptExecutor);
@@ -54,13 +48,13 @@ public class ReceiveMessage implements OnReceive {
         }
     }
 
-    private void notify(DeviceEntity device, Function<String, Object> scriptExecutor) {
+    private void notify(DeviceEntity device, ScriptExecutor scriptExecutor) {
         device.getNotifications().stream()
                 .filter(n -> needToNotify(scriptExecutor, n))
                 .forEach(n -> notify(scriptExecutor, n));
     }
 
-    private void triggerAction(DeviceEntity device, Function<String, Object> scriptExecutor) {
+    private void triggerAction(DeviceEntity device, ScriptExecutor scriptExecutor) {
         device.getActions().stream()
                 .filter(a -> needToPerformAction(scriptExecutor, a))
                 .forEach(this::performAction);
@@ -74,33 +68,25 @@ public class ReceiveMessage implements OnReceive {
                         () -> log.warn("Device id '{}' not found", action.getTargetId()));
     }
 
-    private boolean needToPerformAction(Function<String, Object> scriptExecutor, ActionEntity action) {
-        Object output = scriptExecutor.apply(action.getTrigger());
+    private boolean needToPerformAction(ScriptExecutor scriptExecutor, ActionEntity action) {
+        Object output = scriptExecutor.execute(action.getTrigger());
         if (!(output instanceof Boolean)) {
             throw new NotificationException("Notification output must be a boolean value");
         }
         return Boolean.TRUE.equals(output);
     }
 
-    private Function<String, Object> setupScriptEngine(List<Object> dataHistory) {
-        ScriptContext scriptContext = new SimpleScriptContext();
-        scriptContext.setBindings(scriptEngine.createBindings(), ScriptContext.ENGINE_SCOPE);
-        Bindings engineScope = scriptContext.getBindings(ScriptContext.ENGINE_SCOPE);
-        engineScope.put("$v", dataHistory);
-        return sneakyException(trigger -> scriptEngine.eval(trigger, scriptContext));
-    }
-
-    private boolean needToNotify(Function<String, Object> scriptExecutor, NotificationEntity notification) {
-        Object output = scriptExecutor.apply(notification.getCondition());
+    private boolean needToNotify(ScriptExecutor scriptExecutor, NotificationEntity notification) {
+        Object output = scriptExecutor.execute(notification.getCondition());
         if (!(output instanceof Boolean)) {
             throw new NotificationException("Notification output must be a boolean value");
         }
         return Boolean.TRUE.equals(output);
     }
 
-    private void notify(Function<String, Object> scriptExecutor, NotificationEntity notification) {
+    private void notify(ScriptExecutor scriptExecutor, NotificationEntity notification) {
         log.info("Send notification for device '{}'", notification.getDeviceEntity().getDeviceId());
-        String msg = Objects.toString(scriptExecutor.apply(notification.getMessage()));
+        String msg = Objects.toString(scriptExecutor.execute(notification.getMessage()));
         notifierService.notifyToAll(msg);
     }
 }
