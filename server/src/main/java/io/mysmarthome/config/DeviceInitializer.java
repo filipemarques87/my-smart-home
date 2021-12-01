@@ -3,6 +3,7 @@ package io.mysmarthome.config;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import io.mysmarthome.AppConstants;
 import io.mysmarthome.config.exception.ConfigurationException;
 import io.mysmarthome.device.Device;
 import io.mysmarthome.model.config.DeviceConfig;
@@ -54,7 +55,7 @@ public class DeviceInitializer {
 
     private List<DeviceConfig> getDevicesFromConfigFile() {
         try {
-            String filename = SystemProperty.DEVICE_FILE.getValue();
+            String filename = AppConstants.DEVICES_FILE;
             log.info("Read device config file: {}", filename);
             ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
             return mapper.readValue(new File(filename), new TypeReference<>() {

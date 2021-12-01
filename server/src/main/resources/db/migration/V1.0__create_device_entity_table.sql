@@ -6,5 +6,6 @@ CREATE TABLE device
      additional_info VARCHAR(4000) NOT NULL,
      type            VARCHAR(150) NOT NULL,
      device_group_id VARCHAR(150) NOT NULL,
+     units           VARCHAR(120) NULL,
      PRIMARY KEY (device_id)
   );  

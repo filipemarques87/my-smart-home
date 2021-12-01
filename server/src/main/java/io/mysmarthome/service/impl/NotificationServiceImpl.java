@@ -3,7 +3,7 @@ package io.mysmarthome.service.impl;
 import io.mysmarthome.model.entity.Recipient;
 import io.mysmarthome.repository.RecipientRepository;
 import io.mysmarthome.service.NotificationService;
-import io.mysmarthome.service.notification.firebase.FCMException;
+import io.mysmarthome.service.notification.firebase.impl.FCMException;
 import io.mysmarthome.service.notification.firebase.FCMService;
 import io.mysmarthome.service.notification.firebase.FirebaseNotification;
 import lombok.RequiredArgsConstructor;
@@ -21,15 +21,15 @@ public class NotificationServiceImpl implements NotificationService {
     private final FCMService fcmService;
 
     @Override
-    public void notifyToAll(String msg) {
+    public void notifyToAll(String title, String msg) {
         recipientRepository.findAll()
-                .forEach(r -> notifyRecipient(r, msg));
+                .forEach(r -> notifyRecipient(r, title, msg));
     }
 
-    private void notifyRecipient(Recipient recipient, String msg) {
+    private void notifyRecipient(Recipient recipient, String title, String msg) {
         try {
             fcmService.send(FirebaseNotification.builder()
-                    .title("SmartHome")
+                    .title(title)
                     .content(msg)
                     .token(recipient.getAddress())
                     .topic("cenas")

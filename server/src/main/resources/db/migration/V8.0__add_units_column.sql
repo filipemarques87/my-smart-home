@@ -1,1 +1,0 @@
-ALTER TABLE device ADD units VARCHAR(120) NULL;

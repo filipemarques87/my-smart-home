@@ -4,7 +4,7 @@ import io.mysmarthome.model.entity.Recipient;
 
 public interface NotificationService {
 
-    void notifyToAll(String msg);
+    void notifyToAll(String title, String msg);
 
     Recipient insertFirebaseToken(String token);
 }

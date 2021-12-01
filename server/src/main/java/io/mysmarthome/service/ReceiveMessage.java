@@ -7,6 +7,8 @@ import io.mysmarthome.model.entity.DeviceEntity;
 import io.mysmarthome.model.entity.NotificationEntity;
 import io.mysmarthome.platform.message.OnReceive;
 import io.mysmarthome.platform.message.ReceivedMessage;
+import io.mysmarthome.service.impl.NotificationException;
+import io.mysmarthome.service.impl.ScriptExecutor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -51,7 +53,7 @@ public class ReceiveMessage implements OnReceive {
     private void notify(DeviceEntity device, ScriptExecutor scriptExecutor) {
         device.getNotifications().stream()
                 .filter(n -> needToNotify(scriptExecutor, n))
-                .forEach(n -> notify(scriptExecutor, n));
+                .forEach(n -> notify(device, scriptExecutor, n));
     }
 
     private void triggerAction(DeviceEntity device, ScriptExecutor scriptExecutor) {
@@ -84,9 +86,9 @@ public class ReceiveMessage implements OnReceive {
         return Boolean.TRUE.equals(output);
     }
 
-    private void notify(ScriptExecutor scriptExecutor, NotificationEntity notification) {
+    private void notify(DeviceEntity deviceEntity, ScriptExecutor scriptExecutor, NotificationEntity notification) {
         log.info("Send notification for device '{}'", notification.getDeviceEntity().getDeviceId());
         String msg = Objects.toString(scriptExecutor.execute(notification.getMessage()));
-        notifierService.notifyToAll(msg);
+        notifierService.notifyToAll(deviceEntity.getName(), msg);
     }
 }

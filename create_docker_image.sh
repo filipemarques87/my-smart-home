@@ -15,4 +15,8 @@ mkdir $DIST_DIR
 
 cp ./server/target/server-1.0-SNAPSHOT-boot.jar $DIST_DIR/my-smart-home-server.jar
 
-docker build . --tag "my-smart-home-server"
+echo "Building docker file"
+docker build . -t ft2m/my-smart-home
+
+echo "Pushing docker file"
+docker push ft2m/my-smart-home:latest

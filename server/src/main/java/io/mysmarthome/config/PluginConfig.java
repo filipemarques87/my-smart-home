@@ -1,5 +1,6 @@
 package io.mysmarthome.config;
 
+import io.mysmarthome.AppConstants;
 import io.mysmarthome.configuration.ApplicationProperties;
 import io.mysmarthome.device.Device;
 import io.mysmarthome.platform.PlatformPlugin;
@@ -28,7 +29,7 @@ public class PluginConfig {
 
     @Bean
     public SpringPluginManager pluginManager() {
-        return new SpringPluginManager(Paths.get(SystemProperty.PLATFORM_FOLDER.getValue()));
+        return new SpringPluginManager(Paths.get(AppConstants.PLATFORMS_FOLDER));
     }
 
     @Bean

@@ -1,4 +1,4 @@
-package io.mysmarthome.service;
+package io.mysmarthome.service.impl;
 
 import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;

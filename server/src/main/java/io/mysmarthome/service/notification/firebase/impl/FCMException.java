@@ -1,4 +1,4 @@
-package io.mysmarthome.service.notification.firebase;
+package io.mysmarthome.service.notification.firebase.impl;
 
 public class FCMException extends Exception {
     public FCMException() {

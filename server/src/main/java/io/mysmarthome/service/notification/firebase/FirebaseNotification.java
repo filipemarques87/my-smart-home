@@ -6,7 +6,6 @@ import lombok.Value;
 @Value
 @Builder
 public class FirebaseNotification {
-
     String title;
     String content;
     String topic;
