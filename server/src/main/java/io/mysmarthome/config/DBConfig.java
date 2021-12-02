@@ -1,45 +1,38 @@
 package io.mysmarthome.config;
 
-import io.mysmarthome.AppConstants;
+import io.mysmarthome.AppProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.sql.DataSource;
-import java.util.Objects;
 
 @Slf4j
 @Configuration
 public class DBConfig {
 
     @Bean
-    public DataSource dataSource(
-            @Value("${dbHost:#{null}}") String dbHost,
-            @Value("${username:#{null}}") String username,
-            @Value("${password:#{null}}") String password,
-            @Value("${jdbcDriver:#{null}}") String jdbcDriver
-    ) {
-        if (StringUtils.isBlank(dbHost)) {
-            return buildH2DataSource();
+    public DataSource dataSource(AppProperties appProperties) {
+        if (StringUtils.isBlank(appProperties.getDbHost())) {
+            return buildH2DataSource(appProperties);
         }
 
-        log.info("Setting up database {}, user {}", dbHost, username);
+        log.info("Setting up database {}, user {}", appProperties.getDbHost(), appProperties.getDbUserName());
         return DataSourceBuilder.create()
-                .driverClassName(jdbcDriver)
-                .url(dbHost)
-                .username(username)
-                .password(password)
+                .driverClassName(appProperties.getDbJdbcDriver())
+                .url(appProperties.getDbHost())
+                .username(appProperties.getDbUserName())
+                .password(appProperties.getDbPassword())
                 .build();
     }
 
-    private DataSource buildH2DataSource() {
+    private DataSource buildH2DataSource(AppProperties appProperties) {
         log.info("Setting up h2 database");
         return DataSourceBuilder.create()
                 .driverClassName("org.h2.Driver")
-                .url("jdbc:h2:file:" + AppConstants.DATA_FOLDER + "/database")
+                .url("jdbc:h2:file:" + appProperties.getDataFolder() + "/database")
                 .username("sa")
                 .password("")
                 .build();
