@@ -15,6 +15,7 @@ mkdir $DIST_DIR
 
 cp ./server/target/server-1.0-SNAPSHOT-boot.jar $DIST_DIR/my-smart-home-server.jar
 
+exit 0
 echo "Building docker file"
 docker build . -t ft2m/my-smart-home
 if [[ $ret != 0 ]]; then

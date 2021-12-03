@@ -1,14 +1,13 @@
 #!/bin/bash
 
 # volumes host path
-APP_PATH=/home/filipe/my-smart-home/
+HOST_APP_PATH=/home/pi/my-smart-home/
 
 # configuration
-DB_HOST=jdbc:h2:file:/app/config/database.db
-DB_USER=sa
+DB_HOST=
+DB_USER=
 DB_PASSWORD=
 DB_JDBC_DRIVER=
-LOG_LEVEL=INFO
 
 # create network if not exists
 NETWORK_NAME=my-smart-home-network
@@ -20,11 +19,13 @@ fi
 
 docker run\
   -p 8080:8080 \
+  --env TARGET_APP_PATH=$TARGET_APP_PATH \
   --env DB_HOST=$DB_HOST \
   --env DB_USER=$DB_USER \
   --env DB_PASSWORD=$DB_PASSWORD \
   --env DB_JDBC_DRIVER=$DB_JDBC_DRIVER \
-  --env LOG_LEVEL=$LOG_LEVEL \
-  --volume $APP_PATH:/app \
+  --env LOG_LEVEL=INFO \
+  --volume $HOST_APP_PATH:/app/my-smart-home \
   --network my-smart-home-network \
+  --name my-smart-home \
   ft2m/my-smart-home

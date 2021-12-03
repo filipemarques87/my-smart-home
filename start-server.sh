@@ -1,9 +1,9 @@
 #!/bin/bash
 # create folders if not exists
 mkdir -p $DATA_FOLDER
-mkdir -p CONFIG_FOLDER
-mkdir -p LOGS_FOLDER
-mkdir -p PLATFORMS_FOLDER
+mkdir -p $CONFIG_FOLDER
+mkdir -p $LOGS_FOLDER
+mkdir -p $PLATFORMS_FOLDER
 
 # create empty files if not exists
 if [ ! -f "$CONFIG_FILE" ]; then
@@ -20,7 +20,7 @@ if [[ -z "${LOG_LEVEL}" ]]; then
 fi
 
 # start java application
-java, \
+java \
   -DappRoot="$APP_ROOT" \
   -DdataFolder="$DATA_FOLDER" \
   -DlogPath="$LOGS_FOLDER" \
@@ -29,8 +29,8 @@ java, \
   -DdevicesFile="$DEVICES_FILES" \
   -DfirebaseFcmFile="$FIREBASE_FCM_FILE" \
   -DdbHost=${DB_HOST} \
-  -Dusername=${DB_USER} \
-  -Dpassword=${DB_PASSWORD} \
-  -DjdbcDriver=${DB_JDBC_DRIVER} \
+  -DdbUserName=${DB_USER} \
+  -DdbPassword=${DB_PASSWORD} \
+  -DdbJdbcDriver=${DB_JDBC_DRIVER} \
   -DlogLevel=${LOG_LEVEL} \
   -jar /app/my-smart-home-server.jar
