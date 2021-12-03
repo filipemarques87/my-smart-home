@@ -23,6 +23,7 @@ ENV LOG_LEVEL "$LOG_LEVEL"
 
 WORKDIR "$APP_ROOT"
 
+# copy application and start script
 COPY ./dist ./my-smart-home-server.jar
 COPY ./start-server.sh ./start-server.sh
 
