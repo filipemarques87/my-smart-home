@@ -36,6 +36,7 @@ fi
 
 # start java application
 java \
+  -Xmx128m \
   -DdataFolder="$DATA_FOLDER" \
   -DlogPath="$LOGS_FOLDER" \
   -DplatformsFolder="$PLATFORMS_FOLDER" \
@@ -47,4 +48,4 @@ java \
   -DdbPassword="$DB_PASSWORD" \
   -DdbJdbcDriver="$DB_JDBC_DRIVER" \
   -DlogLevel="$LOG_LEVEL" \
-  -jar /app/my-smart-home-server.jar
+  -jar $APP_PATH/my-smart-home-server.jar
