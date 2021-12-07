@@ -4,7 +4,7 @@ My smart home is a plugin based application to provide support for interaction b
 ## How to install
 The server runs in a service. Change the application root path in `start.sh` and in `mysmarthome.service` file to your directory and then copy the `mysmarthome.service` file to `/etc/systemd/system`.
 
-Run the following commands: `systemctl start mysmarthome` and then `systemctl start mysmarthome`
+Run the following commands: `systemctl start mysmarthome` and then `systemctl enable mysmarthome`
 
 ## File structure
 ```
