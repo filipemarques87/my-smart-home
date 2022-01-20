@@ -1,2 +1,2 @@
 #!/bin/bash
-systemctl start mysmarthome
+systemctl stop mysmarthome
