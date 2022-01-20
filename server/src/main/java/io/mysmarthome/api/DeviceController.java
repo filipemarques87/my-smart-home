@@ -27,7 +27,7 @@ public class DeviceController {
         return deviceSender
                 .send(deviceId, msg)
                 .get(applicationProperties.getInt("api.timeout"), TimeUnit.SECONDS)
-                .map(ReceivedMessage::getMessage)
+                .map( rm -> Map.of("data", rm.getMessage(), "lastUpdate", rm.getReceivedAt()))
                 .orElseThrow(() -> new IllegalArgumentException("Not able to get response from " + deviceId));
     }
 }
