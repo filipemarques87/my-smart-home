@@ -7,4 +7,6 @@ public interface NotificationService {
     void notifyToAll(String title, String msg);
 
     Recipient insertFirebaseToken(String token);
+
+    void removeFirebaseToken(String token);
 }

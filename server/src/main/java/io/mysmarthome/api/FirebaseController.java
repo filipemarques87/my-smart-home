@@ -21,12 +21,19 @@ public class FirebaseController {
     private final NotificationService notificationService;
     private final TokenMapper tokenMapper;
 
-    @PostMapping("")
-    public ResponseEntity<TokenDto> addToken(@RequestBody TokenDto token) {
+    @PostMapping("subscribe")
+    public ResponseEntity<TokenDto> subscribe(@RequestBody TokenDto token) {
         log.info("Register new firebase token: {}", token);
         return Optional.ofNullable(notificationService.insertFirebaseToken(token.getToken()))
                 .map(tokenMapper::toDto)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+    }
+
+    @PostMapping("/unsubscribe")
+    public ResponseEntity<Void> unsubscribe(@RequestBody TokenDto token) {
+        log.info("Remove firebase token: {}", token);
+        notificationService.removeFirebaseToken(token.getToken());
+        return ResponseEntity.ok().build();
     }
 }
