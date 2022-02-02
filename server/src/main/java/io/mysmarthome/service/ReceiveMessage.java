@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @Component
 public class ReceiveMessage implements OnReceive {
 
-    private final DeviceSender deviceSender;
+    private final DeviceInteraction deviceInteraction;
     private final DeviceManager deviceManager;
     private final ScriptEngine scriptEngine;
     private final NotificationService notifierService;
@@ -66,7 +66,7 @@ public class ReceiveMessage implements OnReceive {
         log.info("Action triggered for '{}'. Sending action to '{}'", action.getDeviceEntity().getDeviceId(), action.getTargetId());
         deviceManager.getDevice(action.getTargetId())
                 .ifPresentOrElse(
-                        d -> deviceSender.send(d.getDeviceId(), action.getPayload()),
+                        d -> deviceInteraction.send(d.getDeviceId(), action.getPayload()),
                         () -> log.warn("Device id '{}' not found", action.getTargetId()));
     }
 

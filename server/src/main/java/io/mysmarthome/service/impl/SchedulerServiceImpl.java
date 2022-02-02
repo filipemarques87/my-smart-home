@@ -1,7 +1,7 @@
 package io.mysmarthome.service.impl;
 
 import io.mysmarthome.service.DeviceManager;
-import io.mysmarthome.service.DeviceSender;
+import io.mysmarthome.service.DeviceInteraction;
 import io.mysmarthome.service.SchedulerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class SchedulerServiceImpl implements SchedulerService {
 
-    private final DeviceSender deviceSender;
+    private final DeviceInteraction deviceInteraction;
     private final DeviceManager deviceManager;
 
     @Override
@@ -21,6 +21,6 @@ public class SchedulerServiceImpl implements SchedulerService {
                 .flatMap(d -> d.getSchedulers().stream()
                         .filter(s -> s.getId().equals(schedulerId))
                         .findAny())
-                .ifPresent(s -> deviceSender.send(deviceId, s.getPayload()));
+                .ifPresent(s -> deviceInteraction.send(deviceId, s.getPayload()));
     }
 }

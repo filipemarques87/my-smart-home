@@ -21,5 +21,13 @@ public interface PlatformPlugin<T extends Device> extends BasicPlugin {
         return onSend(getPlatformSpecificDevice(device), payload);
     }
 
+    default DownloadDetails download(Device device, String path) {
+        return onDownload(getPlatformSpecificDevice(device), path);
+    }
+
     CompletableFuture<Optional<ReceivedMessage>> onSend(T device, Object payload);
+
+    default DownloadDetails onDownload(T device, String path) {
+        return null;
+    }
 }
