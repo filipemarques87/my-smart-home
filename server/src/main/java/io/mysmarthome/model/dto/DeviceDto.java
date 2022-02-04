@@ -3,6 +3,8 @@ package io.mysmarthome.model.dto;
 import lombok.Builder;
 import lombok.Value;
 
+import java.util.Map;
+
 @Value
 @Builder
 public class DeviceDto {
@@ -13,9 +15,9 @@ public class DeviceDto {
 
     String type;
 
-    String units;
-
     Object data;
 
     String lastUpdate;
+
+    Map<String, Object> additionalInfo;
 }

@@ -26,16 +26,16 @@ public abstract class DeviceMapper {
     @Mapping(target = "targetId", source = "deviceId")
     public abstract ActionEntity fromConfig(ActionConfig deviceConfig);
 
-    @Mapping(target = "group.name", source = "group")
-    public abstract DeviceEntity fromConfig(DeviceConfig deviceConfig);
-
     @Mapping(source = "device.deviceId", target = "deviceId")
     @Mapping(source = "device.name", target = "name")
     @Mapping(source = "device.type", target = "type")
-    @Mapping(source = "device.units", target = "units")
+    @Mapping(source = "device.customInfo", target = "additionalInfo")
     @Mapping(source = "deviceDataEntity.data", target = "data")
     @Mapping(source = "deviceDataEntity.eventTime", target = "lastUpdate", dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     public abstract DeviceDto toDto(DeviceEntity device, DeviceDataEntity deviceDataEntity);
+
+    @Mapping(target = "group.name", source = "group")
+    public abstract DeviceEntity fromConfig(DeviceConfig deviceConfig);
 
     @AfterMapping
     protected void postDeviceFromConfig(@MappingTarget DeviceEntity deviceEntity) {

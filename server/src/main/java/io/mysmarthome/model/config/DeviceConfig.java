@@ -43,9 +43,6 @@ public class DeviceConfig {
     @JsonProperty("type")
     private String type;
 
-    @JsonProperty("units")
-    private String units;
-
     @JsonIgnore
     private Map<String, Object> customInfo = new HashMap<>();
 

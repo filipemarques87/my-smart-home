@@ -35,6 +35,7 @@ public class ScriptExecutor {
         return scriptEngine.eval(script, scriptContext);
     }
 
+    // TODO dar a possibilidade de executar funcoes dentro do ficheiro
     @SneakyThrows
     private Object executeScriptFromFile(String file) {
         if (!(scriptEngine instanceof Invocable)) {

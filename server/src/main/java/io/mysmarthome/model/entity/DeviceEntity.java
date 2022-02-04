@@ -72,9 +72,6 @@ public class DeviceEntity implements Device {
     @Column(name = "type", nullable = false)
     private String type;
 
-    @Column(name = "units")
-    private String units;
-
     @Override
     public TypedValue getCustomInfo(String key) {
         if (getCustomInfo().containsKey(key)) {

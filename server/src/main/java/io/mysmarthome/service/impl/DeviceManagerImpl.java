@@ -124,13 +124,12 @@ public class DeviceManagerImpl implements DeviceManager {
     public List<DeviceDataEntity> getDeviceData(String deviceId, int limit) {
         Pageable sortedByPriceDesc = PageRequest.of(0, limit, Sort.by("eventTime").descending());
         return deviceDataRepository.findAllByDeviceId(deviceId, sortedByPriceDesc).stream()
-                .map(d -> {
+                .peek(d -> {
                     try {
                         d.setData(serializer.deserialize(d.getSerializedData(), Class.forName(d.getType())));
                     } catch (Exception ex) {
                         throw new RuntimeException(ex);
                     }
-                    return d;
                 })
                 .collect(Collectors.toList());
     }

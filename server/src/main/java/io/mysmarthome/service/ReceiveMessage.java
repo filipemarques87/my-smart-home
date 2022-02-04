@@ -35,7 +35,7 @@ public class ReceiveMessage implements OnReceive {
         try {
             deviceManager.saveData(device.getDeviceId(), msg.getReceivedAt(), msg.getMessage());
 
-            List<Object> dataHistory = deviceManager.getDeviceData(device.getDeviceId(), 10).stream()
+            List<Object> dataHistory = deviceManager.getDeviceData(device.getDeviceId(), 10).stream() // TODO fazer disto configuracao
                     .map(DeviceDataEntity::getData)
                     .collect(Collectors.toList());
 
