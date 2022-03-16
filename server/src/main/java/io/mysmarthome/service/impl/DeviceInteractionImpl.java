@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import javax.script.ScriptEngine;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -77,7 +78,7 @@ public class DeviceInteractionImpl implements DeviceInteraction {
                 .findFirst()
                 .orElse("true");
 
-        ScriptExecutor scriptExecutor = new ScriptExecutor(new ArrayList<>(), scriptEngine);
+        ScriptExecutor scriptExecutor = new ScriptExecutor(scriptEngine);
         Object output = scriptExecutor.execute(condition);
         if (!(output instanceof Boolean)) {
             throw new NotificationException("Notification output must be a boolean value");

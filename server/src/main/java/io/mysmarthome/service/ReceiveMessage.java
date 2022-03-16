@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import javax.script.ScriptEngine;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -40,7 +41,7 @@ public class ReceiveMessage implements OnReceive {
                     .map(DeviceDataEntity::getData)
                     .collect(Collectors.toList());
 
-            ScriptExecutor scriptExecutor = new ScriptExecutor(dataHistory, scriptEngine);
+            ScriptExecutor scriptExecutor = new ScriptExecutor(Map.of("history", dataHistory, "deviceId", device.getDeviceId()), scriptEngine);
             deviceManager.getDevice(device.getDeviceId())
                     .ifPresent(d -> {
                         notify(d, scriptExecutor);
