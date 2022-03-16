@@ -1,5 +1,6 @@
 package io.mysmarthome.service.impl;
 
+import io.mysmarthome.model.SendOnConditionTrigger;
 import io.mysmarthome.service.DeviceManager;
 import io.mysmarthome.service.DeviceInteraction;
 import io.mysmarthome.service.SchedulerService;
@@ -21,6 +22,6 @@ public class SchedulerServiceImpl implements SchedulerService {
                 .flatMap(d -> d.getSchedulers().stream()
                         .filter(s -> s.getId().equals(schedulerId))
                         .findAny())
-                .ifPresent(s -> deviceInteraction.send(deviceId, s.getPayload()));
+                .ifPresent(s -> deviceInteraction.send(deviceId, s.getPayload(), SendOnConditionTrigger.SCHEDULER));
     }
 }

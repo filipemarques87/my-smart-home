@@ -1,7 +1,10 @@
 package io.mysmarthome.service.impl;
 
 import io.mysmarthome.device.Device;
+import io.mysmarthome.model.SendOnConditionTrigger;
+import io.mysmarthome.model.entity.DeviceDataEntity;
 import io.mysmarthome.model.entity.DeviceEntity;
+import io.mysmarthome.model.entity.SendOnConditionEntity;
 import io.mysmarthome.platform.DownloadDetails;
 import io.mysmarthome.platform.PlatformPlugin;
 import io.mysmarthome.platform.message.ReceivedMessage;
@@ -12,7 +15,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.io.InputStream;
+import javax.script.ScriptEngine;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -23,15 +27,24 @@ public class DeviceInteractionImpl implements DeviceInteraction {
 
     private final DeviceManager deviceManager;
     private final MyPluginManager<PlatformPlugin<? extends Device>> platformManager;
+    private final ScriptEngine scriptEngine;
 
     @Override
-    public CompletableFuture<Optional<ReceivedMessage>> send(String deviceId, Object payload) {
+    public CompletableFuture<Optional<ReceivedMessage>> send(String deviceId, Object payload, SendOnConditionTrigger trigger) {
         log.info("Sending '{}' to device '{}'", payload, deviceId);
 
         try {
             DeviceEntity device = getDevice(deviceId);
-            return platformManager.get(device.getPlatform())
-                    .send(device, payload);
+
+            if (canSendToDevice(device, trigger)) {
+                return platformManager.get(device.getPlatform())
+                        .send(device, payload);
+            }
+            log.info("Not send to device because trigger was not satisfy");
+            DeviceDataEntity o = deviceManager.getDeviceData(device.getDeviceId());
+            return CompletableFuture.supplyAsync(() -> Optional.of(ReceivedMessage.builder()
+                    .message(o != null ? o.getData() : null)
+                    .build()));
         } catch (Exception ex) {
             log.error("Error on sending data to '{}'", deviceId, ex);
             throw ex;
@@ -55,5 +68,21 @@ public class DeviceInteractionImpl implements DeviceInteraction {
     private DeviceEntity getDevice(String deviceId) {
         return deviceManager.getDevice(deviceId)
                 .orElseThrow(() -> new IllegalArgumentException("Device id not " + deviceId + "found"));
+    }
+
+    private boolean canSendToDevice(DeviceEntity device, SendOnConditionTrigger trigger) {
+        String condition = device.getSendOnCondition().stream()
+                .filter(s -> s.getTriggers().contains(SendOnConditionTrigger.ALL) || s.getTriggers().contains(trigger))
+                .map(SendOnConditionEntity::getCondition)
+                .findFirst()
+                .orElse("true");
+
+        ScriptExecutor scriptExecutor = new ScriptExecutor(new ArrayList<>(), scriptEngine);
+        Object output = scriptExecutor.execute(condition);
+        if (!(output instanceof Boolean)) {
+            throw new NotificationException("Notification output must be a boolean value");
+        }
+
+        return (boolean) output;
     }
 }

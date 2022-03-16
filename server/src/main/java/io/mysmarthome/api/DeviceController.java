@@ -1,7 +1,9 @@
 package io.mysmarthome.api;
 
 import io.mysmarthome.configuration.ApplicationProperties;
+import io.mysmarthome.model.SendOnConditionTrigger;
 import io.mysmarthome.platform.DownloadDetails;
+import io.mysmarthome.platform.message.ReceivedMessage;
 import io.mysmarthome.service.DeviceInteraction;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -33,21 +36,28 @@ public class DeviceController {
         String filePath = request.getRequestURI().substring(("/device/" + deviceId + "/download").length());
 
         DownloadDetails downloadDetails = deviceInteraction.download(deviceId, filePath);
-            response.setContentType(downloadDetails.getMimeType());
-            response.setHeader("Content-Disposition", String.format("inline; filename=\"%s\"", downloadDetails.getFilename()));
-            response.setContentLength((int) downloadDetails.getFileSize());
-            InputStream inputStream = new BufferedInputStream(downloadDetails.getFileSstream());
-            FileCopyUtils.copy(inputStream, response.getOutputStream());
+        response.setContentType(downloadDetails.getMimeType());
+        response.setHeader("Content-Disposition", String.format("inline; filename=\"%s\"", downloadDetails.getFilename()));
+        response.setContentLength((int) downloadDetails.getFileSize());
+        InputStream inputStream = new BufferedInputStream(downloadDetails.getFileSstream());
+        FileCopyUtils.copy(inputStream, response.getOutputStream());
     }
 
     @PostMapping(value = "/{deviceId}")
     public Object sentToDevice(@PathVariable("deviceId") String deviceId, @RequestBody Map<String, Object> msg) throws InterruptedException, ExecutionException, TimeoutException {
         log.info("Receive action request for device {}: {}", deviceId, msg);
         return deviceInteraction
-                .send(deviceId, msg)
+                .send(deviceId, msg, SendOnConditionTrigger.MANUAL)
                 .get(applicationProperties.getInt("api.timeout"), TimeUnit.SECONDS)
-                .map( rm -> Map.of("data", rm.getMessage(), "lastUpdate", rm.getReceivedAt()))
+                .map(this::mapResponse)
                 .orElseThrow(() -> new IllegalArgumentException("Not able to get response from " + deviceId));
+    }
+
+    private Map<String, Object> mapResponse(ReceivedMessage rm) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("data", rm.getMessage());
+        response.put("lastUpdate", rm.getReceivedAt());
+        return response;
     }
 }
 

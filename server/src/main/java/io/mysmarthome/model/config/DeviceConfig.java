@@ -31,6 +31,9 @@ public class DeviceConfig {
     @JsonProperty("name")
     private String name;
 
+    @JsonProperty("sendOnCondition")
+    private List<SendOnConditionConfig> sendOnCondition;
+
     @JsonProperty("schedulers")
     private List<SchedulerConfig> schedulers;
 

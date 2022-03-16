@@ -1,6 +1,7 @@
 package io.mysmarthome.service;
 
 import io.mysmarthome.device.Device;
+import io.mysmarthome.model.SendOnConditionTrigger;
 import io.mysmarthome.model.entity.ActionEntity;
 import io.mysmarthome.model.entity.DeviceDataEntity;
 import io.mysmarthome.model.entity.DeviceEntity;
@@ -66,7 +67,7 @@ public class ReceiveMessage implements OnReceive {
         log.info("Action triggered for '{}'. Sending action to '{}'", action.getDeviceEntity().getDeviceId(), action.getTargetId());
         deviceManager.getDevice(action.getTargetId())
                 .ifPresentOrElse(
-                        d -> deviceInteraction.send(d.getDeviceId(), action.getPayload()),
+                        d -> deviceInteraction.send(d.getDeviceId(), action.getPayload(), SendOnConditionTrigger.ACTION),
                         () -> log.warn("Device id '{}' not found", action.getTargetId()));
     }
 

@@ -3,11 +3,9 @@ package io.mysmarthome.model.mapper;
 import io.mysmarthome.model.config.ActionConfig;
 import io.mysmarthome.model.config.DeviceConfig;
 import io.mysmarthome.model.config.SchedulerConfig;
+import io.mysmarthome.model.config.SendOnConditionConfig;
 import io.mysmarthome.model.dto.DeviceDto;
-import io.mysmarthome.model.entity.ActionEntity;
-import io.mysmarthome.model.entity.DeviceDataEntity;
-import io.mysmarthome.model.entity.DeviceEntity;
-import io.mysmarthome.model.entity.SchedulerEntity;
+import io.mysmarthome.model.entity.*;
 import org.apache.commons.lang3.StringUtils;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
@@ -21,10 +19,15 @@ import java.util.Locale;
 @Mapper(componentModel = "spring")
 public abstract class DeviceMapper {
 
+    public abstract SendOnConditionEntity fromConfig(SendOnConditionConfig sendOnConditionConfig);
+
     public abstract SchedulerEntity fromConfig(SchedulerConfig schedulerConfig);
 
     @Mapping(target = "targetId", source = "deviceId")
     public abstract ActionEntity fromConfig(ActionConfig deviceConfig);
+
+    @Mapping(target = "group.name", source = "group")
+    public abstract DeviceEntity fromConfig(DeviceConfig deviceConfig);
 
     @Mapping(source = "device.deviceId", target = "deviceId")
     @Mapping(source = "device.name", target = "name")
@@ -34,12 +37,12 @@ public abstract class DeviceMapper {
     @Mapping(source = "deviceDataEntity.eventTime", target = "lastUpdate", dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     public abstract DeviceDto toDto(DeviceEntity device, DeviceDataEntity deviceDataEntity);
 
-    @Mapping(target = "group.name", source = "group")
-    public abstract DeviceEntity fromConfig(DeviceConfig deviceConfig);
-
     @AfterMapping
     protected void postDeviceFromConfig(@MappingTarget DeviceEntity deviceEntity) {
         deviceEntity.getGroup().setDeviceEntity(deviceEntity);
+        if (deviceEntity.getSendOnCondition() != null) {
+            deviceEntity.getSendOnCondition().forEach(n -> n.setDeviceEntity(deviceEntity));
+        }
         if (deviceEntity.getSchedulers() != null) {
             deviceEntity.getSchedulers().forEach(n -> n.setDeviceEntity(deviceEntity));
         }

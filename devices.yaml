@@ -4,6 +4,11 @@
   type: "simple-sensor"
   units: "C"
   name: "Temperatura Sala"
+  sendOnCondition:
+    - trigger:
+        - "on_scheduler"
+        - "on_action"
+      condition: "time.getHours() > 7"
   schedulers:
   - trigger: "0 0 * * * ?"
     payload:

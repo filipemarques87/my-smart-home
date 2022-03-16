@@ -9,9 +9,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class AppProperties {
 
-//    @Value("${appRoot}")
-//    private String appRoot;
-
     @Value("${dataFolder}")
     private String dataFolder;
 
