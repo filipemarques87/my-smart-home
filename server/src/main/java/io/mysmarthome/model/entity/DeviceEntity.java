@@ -35,6 +35,7 @@ public class DeviceEntity implements Device {
     @LazyCollection(LazyCollectionOption.FALSE)
     @OneToMany(mappedBy = "deviceEntity", cascade = CascadeType.ALL /*, fetch = FetchType.EAGER*/)
     private List<SendOnConditionEntity> sendOnCondition;
+
     public List<SendOnConditionEntity> getSendOnCondition() {
         if (sendOnCondition == null) {
             sendOnCondition = new ArrayList<>();
@@ -46,6 +47,7 @@ public class DeviceEntity implements Device {
     // to solve Caused by: org.hibernate.loader.MultipleBagFetchException: cannot simultaneously fetch multiple bags
     @OneToMany(mappedBy = "deviceEntity", cascade = CascadeType.ALL /*, fetch = FetchType.EAGER*/)
     private List<SchedulerEntity> schedulers;
+
     public List<SchedulerEntity> getSchedulers() {
         if (schedulers == null) {
             schedulers = new ArrayList<>();
