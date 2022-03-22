@@ -1,0 +1,110 @@
+<!-- only fo testing -->
+<html>
+<head>
+    <title>Chat WebSocket</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js" integrity="sha512-iKDtgDyTHjAitUDdLljGhenhPwrbBfqTKWO1mkhSFH3A7blITC9MhYon6SjnMhp4o0rADGw9yAC6EW4t5a4K3g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script type="text/javascript">
+            var stompClient = null;
+
+            function setConnected(connected) {
+                document.getElementById('connect').disabled = connected;
+                document.getElementById('disconnect').disabled = !connected;
+                document.getElementById('conversationDiv').style.visibility
+                  = connected ? 'visible' : 'hidden';
+                document.getElementById('response').innerHTML = '';
+            }
+
+            function connect() {
+                var socket = new SockJS('/device/stream');
+                stompClient = Stomp.over(socket);
+                stompClient.connect({}, function(frame) {
+                    setConnected(true);
+                    console.log('Connected: ' + frame);
+                    stompClient.subscribe('/topic/test', function(messageOutput) {
+                        showMessageOutput(messageOutput.body);
+                    });
+                });
+            }
+
+            function disconnect() {
+                if(stompClient != null) {
+                    stompClient.disconnect();
+                }
+                setConnected(false);
+                console.log("Disconnected");
+            }
+
+            function sendMessage() {
+                var from = document.getElementById('from').value;
+                var text = document.getElementById('text').value;
+                stompClient.send("/app/device/stream", {},
+                  JSON.stringify({'from':from, 'text':text}));
+            }
+
+            function showMessageOutput(messageOutput) {
+                /*var response = document.getElementById('response');
+                var p = document.createElement('p');
+                p.style.wordWrap = 'break-word';
+                p.appendChild(document.createTextNode(messageOutput.from + ": "
+                  + messageOutput.text + " (" + messageOutput.time + ")"));
+                response.appendChild(p);*/
+                //var arrayBuffer = msg.data;
+                //var bytes = new Uint8Array(messageOutput);
+
+                var image = document.getElementById('image');
+                image.src = 'data:image/jpg;base64,'+messageOutput;
+            }
+            // public method for encoding an Uint8Array to base64
+            function encode (input) {
+                var keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+                var output = "";
+                var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
+                var i = 0;
+
+                while (i < input.length) {
+                    chr1 = input[i++];
+                    chr2 = i < input.length ? input[i++] : Number.NaN; // Not sure if the index
+                    chr3 = i < input.length ? input[i++] : Number.NaN; // checks are needed here
+
+                    enc1 = chr1 >> 2;
+                    enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
+                    enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
+                    enc4 = chr3 & 63;
+
+                    if (isNaN(chr2)) {
+                        enc3 = enc4 = 64;
+                    } else if (isNaN(chr3)) {
+                        enc4 = 64;
+                    }
+                    output += keyStr.charAt(enc1) + keyStr.charAt(enc2) +
+                              keyStr.charAt(enc3) + keyStr.charAt(enc4);
+                }
+                return output;
+            }
+        </script>
+</head>
+<body onload="disconnect()">
+<div>
+    <div>
+        <input type="text" id="from" placeholder="Choose a nickname"/>
+    </div>
+    <br />
+    <div>
+        <button id="connect" onclick="connect();">Connect</button>
+        <button id="disconnect" disabled="disabled" onclick="disconnect();">
+            Disconnect
+        </button>
+    </div>
+    <br />
+    <div id="conversationDiv">
+        <input type="text" id="text" placeholder="Write a message..."/>
+        <button id="sendMessage" onclick="sendMessage();">Send</button>
+        <p id="response"></p>
+    </div>
+
+    <img id="image" />
+</div>
+
+</body>
+</html>

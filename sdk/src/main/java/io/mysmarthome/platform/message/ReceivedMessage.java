@@ -16,4 +16,10 @@ public class ReceivedMessage {
     Object message;
 
     Instant receivedAt = Instant.now();
+
+    public static ReceivedMessage createSimpleMessage(String value) {
+        return ReceivedMessage.builder()
+                .message(new SimpleMessage(value))
+                .build();
+    }
 }

@@ -10,7 +10,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 @Configuration
 public class TaskSchedulerConfig {
 
-    @Bean
+    @Bean(name = "threadPoolTaskScheduler")
     public ThreadPoolTaskScheduler threadPoolTaskScheduler(@Value("${scheduler.threads.max}") int maxThreads) {
         log.info("Maximum thread used by the scheduler: {}", maxThreads);
         ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();

@@ -16,10 +16,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.script.ScriptEngine;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -66,9 +65,23 @@ public class DeviceInteractionImpl implements DeviceInteraction {
         }
     }
 
+    @Override
+    public void startStream(String deviceId, String sessionId, Consumer<Object> processPayload) {
+        DeviceEntity device = getDevice(deviceId);
+        platformManager.get(device.getPlatform())
+                .startStream(device, processPayload);
+    }
+
+    @Override
+    public void stopStream(String deviceId, String sessionId) {
+        DeviceEntity device = getDevice(deviceId);
+        platformManager.get(device.getPlatform())
+                .stopStream(device);
+    }
+
     private DeviceEntity getDevice(String deviceId) {
         return deviceManager.getDevice(deviceId)
-                .orElseThrow(() -> new IllegalArgumentException("Device id not " + deviceId + "found"));
+                .orElseThrow(() -> new IllegalArgumentException("Device id not " + deviceId + " found"));
     }
 
     private boolean canSendToDevice(DeviceEntity device, SendOnConditionTrigger trigger) {

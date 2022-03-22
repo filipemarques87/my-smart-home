@@ -7,6 +7,7 @@ import io.mysmarthome.platform.message.ReceivedMessage;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 public interface PlatformPlugin<T extends Device> extends BasicPlugin {
     default void registerDevice(Device device, OnReceive callback) {
@@ -21,13 +22,29 @@ public interface PlatformPlugin<T extends Device> extends BasicPlugin {
         return onSend(getPlatformSpecificDevice(device), payload);
     }
 
+    default CompletableFuture<Optional<ReceivedMessage>> onSend(T device, Object payload) {
+        return CompletableFuture.completedFuture(Optional.empty());
+    }
+
     default DownloadDetails download(Device device, String path) {
         return onDownload(getPlatformSpecificDevice(device), path);
     }
 
-    CompletableFuture<Optional<ReceivedMessage>> onSend(T device, Object payload);
-
     default DownloadDetails onDownload(T device, String path) {
         return null;
+    }
+
+    default void startStream(Device device, Consumer<Object> processPayload) {
+        onStartStream(getPlatformSpecificDevice(device), processPayload);
+    }
+
+    default void onStartStream(T device, Consumer<Object> processPayload) {
+    }
+
+    default void stopStream(Device device) {
+        onStopStream(getPlatformSpecificDevice(device));
+    }
+
+    default void onStopStream(T device) {
     }
 }

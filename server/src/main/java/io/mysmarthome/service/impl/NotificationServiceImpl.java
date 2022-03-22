@@ -32,7 +32,7 @@ public class NotificationServiceImpl implements NotificationService {
                     .title(title)
                     .content(msg)
                     .token(recipient.getAddress())
-                    .topic("cenas")
+                    .topic("cenas") // FIXME
                     .build());
         } catch (FCMException e) {
             log.warn("Removing invalid recipient {}", recipient.getAddress());

@@ -5,18 +5,28 @@ import io.mysmarthome.model.SendOnConditionTrigger;
 import io.mysmarthome.platform.DownloadDetails;
 import io.mysmarthome.platform.message.ReceivedMessage;
 import io.mysmarthome.service.DeviceInteraction;
+import io.mysmarthome.service.StreamConnectionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.event.EventListener;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.socket.messaging.AbstractSubProtocolEvent;
+import org.springframework.web.socket.messaging.SessionDisconnectEvent;
+import org.springframework.web.socket.messaging.SessionSubscribeEvent;
+import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -29,6 +39,8 @@ public class DeviceController {
 
     private final DeviceInteraction deviceInteraction;
     private final ApplicationProperties applicationProperties;
+    private final SimpMessagingTemplate simpMessagingTemplate;
+    private final StreamConnectionService streamConnectionService;
 
     @RequestMapping(value = "/{deviceId}/download/**", method = RequestMethod.GET)
     public void downloadFromDevice(@PathVariable("deviceId") String deviceId, HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -59,5 +71,108 @@ public class DeviceController {
         response.put("lastUpdate", rm.getReceivedAt());
         return response;
     }
+
+    @EventListener
+    public void handleSubscribe(final SessionSubscribeEvent event) {
+        Optional<String> sessionIdOpt = getSessionId(event);
+        if (sessionIdOpt.isEmpty()) {
+            log.error("Session id is not present in subscribe event");
+            return;
+        }
+
+        Optional<String> deviceIdOpt = getDeviceId(event);
+        if (deviceIdOpt.isEmpty()) {
+            log.error("Device id is not present in subscribe event");
+            return;
+        }
+
+        String sessionId = sessionIdOpt.get();
+        String deviceId = deviceIdOpt.get();
+        log.info("Add connection for sessionId [{}] and for deviceId [{}]", sessionId, deviceId);
+        streamConnectionService.addConnection(sessionId, deviceId);
+        try {
+            deviceInteraction.startStream(deviceId, sessionId,
+                    data -> {
+                        String dataToSend;
+                        if (data instanceof byte[]) {
+                            dataToSend = Base64.getEncoder().encodeToString((byte[]) data);
+                        } else if (data == null) {
+                            dataToSend = "";
+                        } else {
+                            throw new UnsupportedOperationException("Need to implement converter for " + data.getClass().getCanonicalName());
+                        }
+                        simpMessagingTemplate.convertAndSend("/topic/" + deviceId, dataToSend);
+                    });
+        } catch (Exception e) {
+            log.error("Error while starting stream for device {}", deviceId, e);
+            streamConnectionService.removeConnection(sessionId, deviceId);
+        }
+    }
+
+    @EventListener
+    public void handleUnsubscribe(final SessionUnsubscribeEvent event) {
+        Optional<String> sessionIdOpt = getSessionId(event);
+        if (sessionIdOpt.isEmpty()) {
+            log.error("Session id is not present in subscribe event");
+            return;
+        }
+
+        Optional<String> deviceIdOpt = getDeviceId(event);
+        if (deviceIdOpt.isEmpty()) {
+            log.error("Device id is not present in subscribe event");
+            return;
+        }
+
+        String sessionId = sessionIdOpt.get();
+        String deviceId = deviceIdOpt.get();
+        log.info("Remove connection for sessionId [{}] and for deviceId [{}]", sessionId, deviceId);
+        streamConnectionService.removeConnection(sessionId, deviceId);
+        try {
+            deviceInteraction.stopStream(deviceId, sessionId);
+        } catch (Exception e) {
+            log.error("Error while stopping stream for device {}", deviceId, e);
+            streamConnectionService.removeConnection(sessionId, deviceId);
+        }
+    }
+
+    @EventListener
+    public void handleSessionDisconnectEvent(final SessionDisconnectEvent event) {
+        Optional<String> sessionIdOpt = getSessionId(event);
+        if (sessionIdOpt.isEmpty()) {
+            log.error("Session id is not present in subscribe event");
+            return;
+        }
+
+        String sessionId = sessionIdOpt.get();
+        log.info("Remove all connections for sessionId [{}]", sessionId);
+        streamConnectionService.getConnections(sessionId).forEach(deviceId -> {
+            try {
+                deviceInteraction.stopStream(deviceId, sessionId);
+            } catch (Exception e) {
+                log.error("Error while stopping stream for device {}", deviceId, e);
+                streamConnectionService.removeConnection(sessionId, deviceId);
+            }
+        });
+    }
+
+    private Optional<String> getSessionId(AbstractSubProtocolEvent event) {
+        return Optional.of(event)
+                .map(AbstractSubProtocolEvent::getMessage)
+                .map(SimpMessageHeaderAccessor::wrap)
+                .map(SimpMessageHeaderAccessor::getSessionId);
+    }
+
+    private Optional<String> getDeviceId(AbstractSubProtocolEvent event) {
+        return getWrappedMessage(event)
+                .map(SimpMessageHeaderAccessor::getDestination)
+                .map(d -> d.substring("/topic".length() + 1));
+    }
+
+    private Optional<SimpMessageHeaderAccessor> getWrappedMessage(AbstractSubProtocolEvent event) {
+        return Optional.of(event)
+                .map(AbstractSubProtocolEvent::getMessage)
+                .map(SimpMessageHeaderAccessor::wrap);
+    }
 }
+
 

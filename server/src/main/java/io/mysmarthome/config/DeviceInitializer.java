@@ -16,6 +16,7 @@ import io.mysmarthome.service.ReceiveMessage;
 import io.mysmarthome.service.SchedulerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.Trigger;
@@ -38,6 +39,7 @@ public class DeviceInitializer {
     private final DeviceMapper deviceMapper;
     private final MyPluginManager<? extends PlatformPlugin<? extends Device>> platformManager;
     private final ReceiveMessage receiveMessage;
+    @Qualifier("threadPoolTaskScheduler")
     private final TaskScheduler scheduler;
     private final SchedulerService schedulerService;
     private final AppProperties appProperties;
