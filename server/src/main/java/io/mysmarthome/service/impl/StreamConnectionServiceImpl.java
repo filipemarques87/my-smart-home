@@ -1,8 +1,8 @@
 package io.mysmarthome.service.impl;
 
+import io.mysmarthome.model.entity.DeviceConnection;
 import io.mysmarthome.model.entity.StreamConnection;
 import io.mysmarthome.repository.StreamConnectionRepository;
-import io.mysmarthome.service.DeviceInteraction;
 import io.mysmarthome.service.StreamConnectionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,15 +14,14 @@ import java.util.*;
 public class StreamConnectionServiceImpl implements StreamConnectionService {
 
     private final StreamConnectionRepository streamConnectionRepository;
-    private final DeviceInteraction deviceInteraction;
 
     @Override
-    public void addConnection(String sessionId, String deviceId) {
+    public void addConnection(String sessionId, String subscriptionId, String deviceId) {
         Optional<StreamConnection> streamConnectionOpt = streamConnectionRepository.findById(sessionId);
         boolean alreadyConnected = streamConnectionOpt
                 .map(StreamConnection::getConnectedDevices).stream()
                 .flatMap(Collection::stream)
-                .anyMatch(d -> d.equals(deviceId));
+                .anyMatch(d -> d.getDeviceId().equals(deviceId));
 
         if (alreadyConnected) {
             // nothing to do
@@ -32,23 +31,33 @@ public class StreamConnectionServiceImpl implements StreamConnectionService {
         if (streamConnectionOpt.isEmpty()) {
             streamConnection = StreamConnection.builder()
                     .sessionId(sessionId)
-                    .connectedDevices(new HashSet<>(List.of(deviceId)))
+                    .connectedDevices(new HashSet<>(List.of(new DeviceConnection(subscriptionId, deviceId))))
                     .build();
         } else {
             streamConnection = streamConnectionOpt.get();
-            streamConnection.getConnectedDevices().add(deviceId);
+            streamConnection.getConnectedDevices().add(new DeviceConnection(subscriptionId, deviceId));
         }
         streamConnectionRepository.save(streamConnection);
     }
 
     @Override
-    public void removeConnection(String sessionId, String deviceId) {
+    public void removeConnection(String sessionId, String subscriptionId) {
         streamConnectionRepository.findById(sessionId)
-                .ifPresent(streamConnectionRepository::delete);
+                .ifPresent(s -> {
+                            s.getConnectedDevices().stream()
+                                    .filter(c -> c.getSubscriptionId().equals(subscriptionId))
+                                    .findFirst()
+                                    .ifPresent(dc -> s.getConnectedDevices().remove(dc));
+
+                            if (s.getConnectedDevices().isEmpty()) {
+                                streamConnectionRepository.delete(s);
+                            }
+                        }
+                );
     }
 
     @Override
-    public Set<String> getConnections(String sessionId) {
+    public Set<DeviceConnection> getConnections(String sessionId) {
         return streamConnectionRepository.findById(sessionId)
                 .map(StreamConnection::getConnectedDevices)
                 .orElse(new HashSet<>());

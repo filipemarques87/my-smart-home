@@ -2,12 +2,14 @@ package io.mysmarthome.api;
 
 import io.mysmarthome.configuration.ApplicationProperties;
 import io.mysmarthome.model.SendOnConditionTrigger;
+import io.mysmarthome.model.entity.DeviceConnection;
 import io.mysmarthome.platform.DownloadDetails;
 import io.mysmarthome.platform.message.ReceivedMessage;
 import io.mysmarthome.service.DeviceInteraction;
 import io.mysmarthome.service.StreamConnectionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -23,10 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -80,6 +79,12 @@ public class DeviceController {
             return;
         }
 
+        Optional<String> subscriptionIdOpt = getSubscriptionId(event);
+        if (subscriptionIdOpt.isEmpty()) {
+            log.error("Subscription id is not present in subscribe event");
+            return;
+        }
+
         Optional<String> deviceIdOpt = getDeviceId(event);
         if (deviceIdOpt.isEmpty()) {
             log.error("Device id is not present in subscribe event");
@@ -87,9 +92,10 @@ public class DeviceController {
         }
 
         String sessionId = sessionIdOpt.get();
+        String subscriptionId = subscriptionIdOpt.get();
         String deviceId = deviceIdOpt.get();
         log.info("Add connection for sessionId [{}] and for deviceId [{}]", sessionId, deviceId);
-        streamConnectionService.addConnection(sessionId, deviceId);
+        streamConnectionService.addConnection(sessionId, subscriptionId, deviceId);
         try {
             deviceInteraction.startStream(deviceId, sessionId,
                     data -> {
@@ -117,16 +123,36 @@ public class DeviceController {
             return;
         }
 
-        Optional<String> deviceIdOpt = getDeviceId(event);
-        if (deviceIdOpt.isEmpty()) {
-            log.error("Device id is not present in subscribe event");
+//        Optional<String> deviceIdOpt = getDeviceId(event);
+//        if (deviceIdOpt.isEmpty()) {
+//            log.error("Device id is not present in subscribe event");
+//            return;
+//        }
+
+        Optional<String> subscriptionIdOpt = getSubscriptionId(event);
+        if (subscriptionIdOpt.isEmpty()) {
+            log.error("Subscription id is not present in subscribe event");
             return;
         }
 
         String sessionId = sessionIdOpt.get();
+        String subscriptionId = subscriptionIdOpt.get();
+
+        Set<DeviceConnection> connections = streamConnectionService.getConnections(sessionId);
+        Optional<String> deviceIdOpt = connections.stream()
+                .filter(c -> c.getSubscriptionId().equals(subscriptionId))
+                .map(DeviceConnection::getDeviceId)
+                .findFirst();
+
+        if (deviceIdOpt.isEmpty()) {
+            log.error("Could not find a device id linked to subscription id {}", subscriptionId);
+            return;
+        }
+
+        log.info("Remove connection for sessionId [{}] and for deviceId [{}]", sessionId, subscriptionId);
+        streamConnectionService.removeConnection(sessionId, subscriptionId);
+
         String deviceId = deviceIdOpt.get();
-        log.info("Remove connection for sessionId [{}] and for deviceId [{}]", sessionId, deviceId);
-        streamConnectionService.removeConnection(sessionId, deviceId);
         try {
             deviceInteraction.stopStream(deviceId, sessionId);
         } catch (Exception e) {
@@ -137,6 +163,10 @@ public class DeviceController {
 
     @EventListener
     public void handleSessionDisconnectEvent(final SessionDisconnectEvent event) {
+        // unsubscribe for all topics is always called?
+        if(true) {
+            return;
+        }
         Optional<String> sessionIdOpt = getSessionId(event);
         if (sessionIdOpt.isEmpty()) {
             log.error("Session id is not present in subscribe event");
@@ -145,7 +175,8 @@ public class DeviceController {
 
         String sessionId = sessionIdOpt.get();
         log.info("Remove all connections for sessionId [{}]", sessionId);
-        streamConnectionService.getConnections(sessionId).forEach(deviceId -> {
+        streamConnectionService.getConnections(sessionId).forEach(connection -> {
+            String deviceId = connection.getDeviceId();
             try {
                 deviceInteraction.stopStream(deviceId, sessionId);
             } catch (Exception e) {
@@ -164,7 +195,7 @@ public class DeviceController {
 
     private Optional<String> getDeviceId(AbstractSubProtocolEvent event) {
         return getWrappedMessage(event)
-                .map(SimpMessageHeaderAccessor::getDestination)
+                .map(this::getTopic)
                 .map(d -> d.substring("/topic".length() + 1));
     }
 
@@ -173,6 +204,19 @@ public class DeviceController {
                 .map(AbstractSubProtocolEvent::getMessage)
                 .map(SimpMessageHeaderAccessor::wrap);
     }
+
+    private String getTopic(SimpMessageHeaderAccessor simpMessageHeaderAccessor) {
+        if (StringUtils.isNotBlank(simpMessageHeaderAccessor.getDestination())) {
+            return simpMessageHeaderAccessor.getDestination();
+        }
+        return simpMessageHeaderAccessor.getSubscriptionId();
+    }
+
+    private Optional<String> getSubscriptionId(AbstractSubProtocolEvent event) {
+        return getWrappedMessage(event)
+                .map(SimpMessageHeaderAccessor::getSubscriptionId);
+    }
 }
+
 
 

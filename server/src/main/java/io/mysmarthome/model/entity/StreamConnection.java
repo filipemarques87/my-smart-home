@@ -1,6 +1,7 @@
 package io.mysmarthome.model.entity;
 
 import io.mysmarthome.repository.Identifiable;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
@@ -10,7 +11,7 @@ import java.util.Set;
 @Builder
 public class StreamConnection implements Identifiable {
     private String sessionId;
-    private Set<String> connectedDevices;
+    private Set<DeviceConnection> connectedDevices;
 
     @Override
     public String getId() {
