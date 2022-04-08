@@ -38,7 +38,7 @@ public class DeviceController {
 
     private final DeviceInteraction deviceInteraction;
     private final ApplicationProperties applicationProperties;
-    private final SimpMessagingTemplate simpMessagingTemplate;
+//    private final SimpMessagingTemplate simpMessagingTemplate;
     private final StreamConnectionService streamConnectionService;
 
     @RequestMapping(value = "/{deviceId}/download/**", method = RequestMethod.GET)
@@ -107,7 +107,8 @@ public class DeviceController {
                         } else {
                             throw new UnsupportedOperationException("Need to implement converter for " + data.getClass().getCanonicalName());
                         }
-                        simpMessagingTemplate.convertAndSend("/topic/" + deviceId, dataToSend);
+//                        System.out.println(dataToSend.length());
+//                        simpMessagingTemplate.convertAndSend("/topic/" + deviceId, dataToSend);
                     });
         } catch (Exception e) {
             log.error("Error while starting stream for device {}", deviceId, e);
@@ -164,6 +165,7 @@ public class DeviceController {
     @EventListener
     public void handleSessionDisconnectEvent(final SessionDisconnectEvent event) {
         // unsubscribe for all topics is always called?
+        System.out.println();
         if(true) {
             return;
         }
