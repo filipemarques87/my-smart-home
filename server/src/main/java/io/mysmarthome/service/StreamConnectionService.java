@@ -1,14 +1,17 @@
 package io.mysmarthome.service;
 
 import io.mysmarthome.model.entity.DeviceConnection;
+import org.springframework.web.socket.WebSocketSession;
 
 import java.util.Set;
 
 public interface StreamConnectionService {
 
-    void addConnection(String sessionId, String subscriptionId, String deviceId);
+    void addConnection(WebSocketSession session, String deviceId);
 
-    void removeConnection(String sessionId, String subscriptionId);
+    void removeConnection(WebSocketSession session, String deviceId);
 
-    Set<DeviceConnection> getConnections(String sessionId);
+    Set<String> getDevices(WebSocketSession session);
+
+    Set<WebSocketSession> getSessionsByDeviceId(String deviceId);
 }

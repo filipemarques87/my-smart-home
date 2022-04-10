@@ -2,11 +2,15 @@ package io.mysmarthome.repository;
 
 import org.springframework.data.repository.CrudRepository;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class InMemoryRepository<T extends Identifiable> implements CrudRepository<T, String> {
 
-    private final Map<String, T> connections = new HashMap<>();
+    private final Map<String, T> connections = new ConcurrentHashMap<>();
 
     @Override
     public <S extends T> S save(S s) {

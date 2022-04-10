@@ -1,13 +1,15 @@
 package io.mysmarthome.service.impl;
 
-import io.mysmarthome.model.entity.DeviceConnection;
 import io.mysmarthome.model.entity.StreamConnection;
 import io.mysmarthome.repository.StreamConnectionRepository;
 import io.mysmarthome.service.StreamConnectionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.socket.WebSocketSession;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service
 @RequiredArgsConstructor
@@ -16,12 +18,13 @@ public class StreamConnectionServiceImpl implements StreamConnectionService {
     private final StreamConnectionRepository streamConnectionRepository;
 
     @Override
-    public void addConnection(String sessionId, String subscriptionId, String deviceId) {
+    public void addConnection(WebSocketSession session, String deviceId) {
+        String sessionId = session.getId();
         Optional<StreamConnection> streamConnectionOpt = streamConnectionRepository.findById(sessionId);
         boolean alreadyConnected = streamConnectionOpt
-                .map(StreamConnection::getConnectedDevices).stream()
+                .map(StreamConnection::getDevices).stream()
                 .flatMap(Collection::stream)
-                .anyMatch(d -> d.getDeviceId().equals(deviceId));
+                .anyMatch(deviceId::equals);
 
         if (alreadyConnected) {
             // nothing to do
@@ -31,25 +34,27 @@ public class StreamConnectionServiceImpl implements StreamConnectionService {
         if (streamConnectionOpt.isEmpty()) {
             streamConnection = StreamConnection.builder()
                     .sessionId(sessionId)
-                    .connectedDevices(new HashSet<>(List.of(new DeviceConnection(subscriptionId, deviceId))))
+                    .session(session)
+                    .devices(new HashSet<>(List.of(deviceId)))
                     .build();
         } else {
             streamConnection = streamConnectionOpt.get();
-            streamConnection.getConnectedDevices().add(new DeviceConnection(subscriptionId, deviceId));
+            streamConnection.getDevices().add(deviceId);
         }
         streamConnectionRepository.save(streamConnection);
     }
 
     @Override
-    public void removeConnection(String sessionId, String subscriptionId) {
+    public void removeConnection(WebSocketSession session, String deviceId) {
+        String sessionId = session.getId();
         streamConnectionRepository.findById(sessionId)
                 .ifPresent(s -> {
-                            s.getConnectedDevices().stream()
-                                    .filter(c -> c.getSubscriptionId().equals(subscriptionId))
+                            s.getDevices().stream()
+                                    .filter(deviceId::equals)
                                     .findFirst()
-                                    .ifPresent(dc -> s.getConnectedDevices().remove(dc));
+                                    .ifPresent(d -> s.getDevices().remove(d));
 
-                            if (s.getConnectedDevices().isEmpty()) {
+                            if (s.getDevices().isEmpty()) {
                                 streamConnectionRepository.delete(s);
                             }
                         }
@@ -57,9 +62,17 @@ public class StreamConnectionServiceImpl implements StreamConnectionService {
     }
 
     @Override
-    public Set<DeviceConnection> getConnections(String sessionId) {
-        return streamConnectionRepository.findById(sessionId)
-                .map(StreamConnection::getConnectedDevices)
+    public Set<String> getDevices(WebSocketSession session) {
+        return streamConnectionRepository.findById(session.getId())
+                .map(StreamConnection::getDevices)
                 .orElse(new HashSet<>());
+    }
+
+    @Override
+    public Set<WebSocketSession> getSessionsByDeviceId(String deviceId) {
+        return StreamSupport.stream(streamConnectionRepository.findAll().spliterator(), false)
+                .filter(s -> s.getDevices().contains(deviceId))
+                .map(StreamConnection::getSession)
+                .collect(Collectors.toSet());
     }
 }

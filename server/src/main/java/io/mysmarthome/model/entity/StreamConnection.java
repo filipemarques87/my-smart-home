@@ -1,9 +1,9 @@
 package io.mysmarthome.model.entity;
 
 import io.mysmarthome.repository.Identifiable;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import org.springframework.web.socket.WebSocketSession;
 
 import java.util.Set;
 
@@ -11,7 +11,8 @@ import java.util.Set;
 @Builder
 public class StreamConnection implements Identifiable {
     private String sessionId;
-    private Set<DeviceConnection> connectedDevices;
+    private WebSocketSession session;
+    private Set<String> devices;
 
     @Override
     public String getId() {

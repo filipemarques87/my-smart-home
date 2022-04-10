@@ -1,11 +1,12 @@
-package io.mysmarthome.config;
+package io.mysmarthome.api.websocket;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
-import org.springframework.stereotype.Component;
-import org.springframework.web.socket.*;
-import org.springframework.web.socket.handler.ConcurrentWebSocketSessionDecorator;
-import org.springframework.web.socket.handler.TextWebSocketHandler;
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.WebSocketExtension;
+import org.springframework.web.socket.WebSocketMessage;
+import org.springframework.web.socket.WebSocketSession;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -13,69 +14,19 @@ import java.net.URI;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-@Component
-public class SocketTextHandler extends TextWebSocketHandler {
-
-    private final Map<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
-
-    @Override
-    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        System.out.println(session.getId());
-        System.out.println(session.getUri().getPath());
-        if (!sessions.containsKey(session.getId())) {
-            sessions.put(session.getId(), new WebSocketSessionAsync(session));
-        }
-    }
-
-    @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        if (sessions.containsKey(session.getId())) {
-            sessions.remove(session.getId());
-        }
-    }
-
-
-    @Override
-    public void handleTextMessage(WebSocketSession session, TextMessage message)
-            throws InterruptedException, IOException {
-
-//        System.out.println(session.getId());
-//        String payload = message.getPayload();
-
-
-
-        if (!sessions.containsKey(session.getId())) {
-            return;
-        }
-        session =  sessions.get(session.getId());//decorateSession(session);
-
-
-        String msg = "1".repeat(100_000_000);
-
-        session.sendMessage(new TextMessage(msg));
-
-
-    }
-
-    protected WebSocketSession decorateSession(WebSocketSession session) {
-        return  new ConcurrentWebSocketSessionDecorator(new WebSocketSessionAsync(session),1,1);
-    }
-
-}
-
-
+@Slf4j
 @RequiredArgsConstructor
-class WebSocketSessionAsync implements WebSocketSession {
+public class WebSocketSessionUDP implements WebSocketSession {
 
     private final WebSocketSession delegate;
 
-    private final ExecutorService threadpool = Executors.newSingleThreadExecutor();
+    private final ExecutorService threadPool = Executors.newSingleThreadExecutor();
 
-    private boolean isSending = false;
+    private AtomicBoolean isSending = new AtomicBoolean(false);
 
     @Override
     public String getId() {
@@ -143,21 +94,20 @@ class WebSocketSessionAsync implements WebSocketSession {
     }
 
     @Override
-    public void sendMessage(WebSocketMessage<?> message) throws IOException {
-
-        if (isSending) {
+    public void sendMessage(WebSocketMessage<?> message) {
+        if (isSending.get()) {
             System.out.println("cannot send message. previous message was not delivery yet");
             return;
         }
 
-        isSending =true;
-        threadpool.submit(() -> {
+        isSending.set(true);
+        threadPool.submit(() -> {
             try {
                 delegate.sendMessage(message);
-            } catch (IOException e) {
-                System.out.println("error on sending");
+            } catch (Exception e) {
+                log.error("Error on sending message");
             } finally {
-                isSending =false;
+                isSending.set(true);
             }
         });
     }
