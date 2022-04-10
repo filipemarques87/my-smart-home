@@ -107,7 +107,7 @@ public class WebSocketSessionUDP implements WebSocketSession {
             } catch (Exception e) {
                 log.error("Error on sending message");
             } finally {
-                isSending.set(true);
+                isSending.set(false);
             }
         });
     }
