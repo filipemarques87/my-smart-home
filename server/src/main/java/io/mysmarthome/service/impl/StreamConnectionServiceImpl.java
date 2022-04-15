@@ -45,6 +45,12 @@ public class StreamConnectionServiceImpl implements StreamConnectionService {
     }
 
     @Override
+    public Optional<WebSocketSession> getConnection(WebSocketSession session) {
+        return streamConnectionRepository.findById(session.getId())
+                .map(StreamConnection::getSession);
+    }
+
+    @Override
     public void removeConnection(WebSocketSession session, String deviceId) {
         String sessionId = session.getId();
         streamConnectionRepository.findById(sessionId)

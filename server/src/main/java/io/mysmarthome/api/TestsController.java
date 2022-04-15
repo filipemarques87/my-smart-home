@@ -25,7 +25,12 @@ public class TestsController {
     @GetMapping("/sensor/{sensorName}")
     public ResponseEntity<Map<String, Object>> handleSensor(@PathVariable("sensorName") String sensorName) {
         log.info("Receive read sensor request {}", sensorName);
-        String val = df.format(new Random().nextDouble() * 10);
+        String val;
+        if ("test1".equals(sensorName)) {
+            val = new Random().nextBoolean() ? "1" : "0";
+        } else {
+            val = df.format(new Random().nextDouble() * 10);
+        }
         return new ResponseEntity<>(Map.of("val", val), HttpStatus.OK);
     }
 

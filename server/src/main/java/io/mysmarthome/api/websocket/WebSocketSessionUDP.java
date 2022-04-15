@@ -28,6 +28,8 @@ public class WebSocketSessionUDP implements WebSocketSession {
 
     private AtomicBoolean isSending = new AtomicBoolean(false);
 
+    private AtomicBoolean canSend = new AtomicBoolean(false);
+
     @Override
     public String getId() {
         return delegate.getId();
@@ -95,12 +97,12 @@ public class WebSocketSessionUDP implements WebSocketSession {
 
     @Override
     public void sendMessage(WebSocketMessage<?> message) {
-        if (isSending.get()) {
-            System.out.println("cannot send message. previous message was not delivery yet");
+        if (isSending.get() || !canSend.get()) {
             return;
         }
 
         isSending.set(true);
+        canSend.set(false);
         threadPool.submit(() -> {
             try {
                 delegate.sendMessage(message);
@@ -125,5 +127,9 @@ public class WebSocketSessionUDP implements WebSocketSession {
     @Override
     public void close(CloseStatus status) throws IOException {
         delegate.close(status);
+    }
+
+    public void canSend() {
+        canSend.set(true);
     }
 }

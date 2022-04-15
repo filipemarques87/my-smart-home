@@ -20,7 +20,7 @@ import static io.mysmarthome.util.SneakyException.sneakyException;
 @Component
 public class DeviceWebSocketHandler extends AbstractWebSocketHandler {
 
-    public static final String BASE_URI = "/device";
+    public static final String BASE_URI = "/udpstream";
 
     private final DeviceInteraction deviceInteraction;
     private final StreamConnectionService streamConnectionService;
@@ -46,6 +46,21 @@ public class DeviceWebSocketHandler extends AbstractWebSocketHandler {
             log.error("Error while starting stream for device {}", deviceId, e);
             streamConnectionService.removeConnection(session, deviceId);
         }
+    }
+
+    @Override
+    public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) {
+        if (message instanceof TextMessage) {
+            TextMessage textMessage = (TextMessage)message;
+            if (!"request-new-data".equals(textMessage.getPayload())) {
+                return;
+            }
+        }
+
+        streamConnectionService.getConnection(session)
+                .filter(WebSocketSessionUDP.class::isInstance)
+                .map(WebSocketSessionUDP.class::cast)
+                .ifPresent(WebSocketSessionUDP::canSend);
     }
 
     @Override
